@@ -1,0 +1,3 @@
+{
+  "OLLAMA_API_BASE": "http://host.docker.internal:11434"
+}

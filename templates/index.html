@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ricemaker | AI File Reviewer</title>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0c;
+            --bg-secondary: #16161a;
+            --bg-tertiary: #1f1f23;
+            --accent-primary: #3b82f6; /* Blue */
+            --accent-secondary: #10b981; /* Green */
+            --text-primary: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --border-color: #27272a;
+            --status-pending: #f59e0b;
+            --status-completed: #10b981;
+            --status-error: #ef4444;
+            --status-processing: #3b82f6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 260px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 2.5rem;
+            color: var(--text-primary);
+        }
+
+        .logo i {
+            color: var(--accent-primary);
+        }
+
+        nav ul {
+            list-style: none;
+        }
+
+        nav li {
+            margin-bottom: 0.5rem;
+        }
+
+        nav a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        nav a:hover, nav a.active {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        nav a.active {
+            color: var(--accent-primary);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            background-image: url('/static/padifield.jpg');
+            background-size: cover;
+            background-position: center;
+            border: 1px solid var(--border-color);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-value.accent {
+            color: var(--accent-primary);
+        }
+
+        /* Dashboard Layout */
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 2rem;
+            flex: 1;
+        }
+
+        section {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header h2 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            flex: 1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8125rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 0.6rem 1.25rem;
+            background-color: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 0.35rem 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            line-height: 1;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .status-badge.pending { background-color: rgba(245, 158, 11, 0.1); color: var(--status-pending); }
+        .status-badge.completed { background-color: rgba(16, 185, 129, 0.1); color: var(--status-completed); }
+        .status-badge.error { background-color: rgba(239, 68, 68, 0.1); color: var(--status-error); }
+        .status-badge.processing { background-color: rgba(59, 130, 246, 0.1); color: var(--status-processing); }
+
+        /* Summary Area */
+        #summary-content {
+            padding: 1.5rem;
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+            overflow-y: auto;
+            max-height: 900px;
+        }
+
+        #summary-content h1, #summary-content h2, #summary-content h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-primary);
+        }
+
+        #summary-content p {
+            margin-bottom: 1rem;
+        }
+
+        #summary-content code {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: var(--bg-tertiary);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-color);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: opacity 0.2s;
+            font-size: 0.875rem;
+        }
+        .btn:hover { opacity: 0.8; }
+        .btn-primary { background-color: var(--accent-primary); color: white; }
+        .btn-success { background-color: var(--status-completed); color: white; }
+        .btn-warning { background-color: var(--status-pending); color: white; }
+        .btn-danger { background-color: var(--status-error); color: white; }
+        .btn-outline { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo">
+            <i data-lucide="chef-hat"></i>
+            Ricemaker
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#" class="active" id="nav-dashboard" onclick="showView('dashboard')"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
+                <li><a href="#" id="nav-archive" onclick="showView('archive')"><i data-lucide="archive"></i> File Archive</a></li>
+                <li><a href="#" id="nav-stats" onclick="showView('stats')"><i data-lucide="bar-chart-2"></i> Stats & Tokens</a></li>
+                <li><a href="#" onclick="resetToMaster()"><i data-lucide="file-text"></i> Master Summary</a></li>
+                <li><a href="#"><i data-lucide="settings"></i> Settings</a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <p>v0.1.0-alpha</p>
+            <p>Local Inference: Active</p>
+        </div>
+    </aside>
+
+    <main>
+        <header style="align-items: flex-start;">
+            <div>
+                <h1 id="page-title">Rice Making Status</h1>
+                <p id="page-subtitle" style="color: var(--text-secondary);">Real-time file processing and synthesis.</p>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 1rem;">
+                <div id="agent-controls" style="display: flex; gap: 0.5rem;">
+                    <button id="btn-agent-main" class="btn btn-primary" onclick="window.toggleAgentState()">Loading...</button>
+                    <button id="btn-agent-stop" class="btn btn-danger" onclick="window.stopAgent()" style="display: none;"><i data-lucide="square" style="width: 14px; height: 14px;"></i> Stop</button>
+                </div>
+                <div id="last-updated" style="font-size: 0.875rem; color: var(--text-secondary);">
+                    Syncing...
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard View -->
+        <div id="view-dashboard">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label">Queue Size</span>
+                    <span id="stat-total" class="stat-value">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Active Model</span>
+                    <span id="stat-active-model" class="stat-value" style="font-size: 1.1rem; color: var(--accent-primary);">Syncing...</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Processed (Session)</span>
+                    <span id="stat-session-processed" class="stat-value accent">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Tokens (Session)</span>
+                    <span id="stat-session-tokens" class="stat-value">0</span>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <section>
+                    <div class="section-header">
+                        <h2>Live Queue</h2>
+                        <i data-lucide="refresh-cw" id="sync-icon" style="width: 16px; height: 16px; cursor: pointer; color: var(--text-secondary);"></i>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 20%;">Status</th>
+                                    <th style="width: 60%;">File Name</th>
+                                    <th style="width: 20%;">Last Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody id="status-table-body">
+                                <!-- Pending/Processing Rows injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="section-header">
+                        <h2>Master Summary</h2>
+                        <i data-lucide="file-text" style="width: 16px; height: 16px; color: var(--text-secondary);"></i>
+                    </div>
+                    <div id="summary-content">
+                        <p style="color: var(--text-secondary);">No summary generated yet. Start dropping files into the input folder.</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Archive View -->
+        <div id="view-archive" style="display: none; gap: 2rem; align-items: flex-start; width: 100%; height: 100%;">
+            <!-- Left: Completed List -->
+            <section style="flex: 1.5; min-width: 0; height: 100%;">
+                <div class="section-header" style="background-color: rgba(16, 185, 129, 0.05);">
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <h2 style="color: var(--status-completed);">Completed Reports</h2>
+                        <span id="archive-completed-count" style="font-size: 0.875rem; color: var(--text-secondary);">0 files</span>
+                    </div>
+                    <button class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;" onclick="window.archiveAllFiles()">Archive All Completed</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 50%;">File Name</th>
+                                <th style="width: 25%;">Model</th>
+                                <th style="width: 25%;">Completion Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="archive-completed-body">
+                            <!-- Completed Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Right: Preview + Errors -->
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2rem; min-width: 0; height: 100%;">
+                <section style="flex: 2; min-width: 0; display: flex; flex-direction: column;">
+                    <div class="section-header">
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <h2>Report Preview</h2>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;" id="preview-actions">
+                            <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;" id="btn-archive-current" onclick="window.archiveCurrentFile()">Archive Current</button>
+                            <button class="btn btn-warning" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;" id="btn-rereview" onclick="window.rereviewCurrentFile()">Re-review</button>
+                        </div>
+                    </div>
+                    <div id="archive-summary-content" style="padding: 1rem; overflow-y: auto; font-size: 0.8125rem; flex: 1;">
+                        <p style="color: var(--text-secondary);">Select a completed report to preview.</p>
+                    </div>
+                </section>
+
+                <section style="flex: 1.2; min-width: 0; display: flex; flex-direction: column;">
+                    <div class="section-header" style="background-color: rgba(239, 68, 68, 0.05);">
+                        <h2 style="color: var(--status-error);">Processing Errors</h2>
+                        <span id="archive-error-count" style="font-size: 0.875rem; color: var(--text-secondary);">0 files</span>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 50%;">File Name</th>
+                                    <th style="width: 25%;">Model</th>
+                                    <th style="width: 25%;">Attempted Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="archive-error-body">
+                                <!-- Error Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Stats View -->
+        <div id="view-stats" style="display: none; flex-direction: column; gap: 2rem;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label">Total Tokens (All Time)</span>
+                    <span id="alltime-tokens" class="stat-value">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Avg. Latency (Inference)</span>
+                    <span id="avg-inference" class="stat-value accent">0s</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Avg. Latency (Extraction)</span>
+                    <span id="avg-extraction" class="stat-value">0s</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Total Files Processed</span>
+                    <span id="alltime-files" class="stat-value">0</span>
+                </div>
+            </div>
+
+            <section>
+                <div class="section-header">
+                    <h2>Detailed Performance History</h2>
+                    <span id="stats-record-count" style="font-size: 0.875rem; color: var(--text-secondary);">0 records</span>
+                </div>
+                <div class="table-container" style="max-height: 500px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>File Name</th>
+                                <th>Type</th>
+                                <th>Tokens</th>
+                                <th>Extraction</th>
+                                <th>Inference</th>
+                                <th>Total Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stats-table-body">
+                            <!-- Stats Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js', v=8) }}"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

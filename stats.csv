@@ -1,0 +1,202 @@
+timestamp,file,cost,latency
+2026-04-06,2026-04-06 10:15:09,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-06,2026-04-06 10:23:30,More-global-supply-chain-snarls.pdf,.pdf,ollama/gemma4:26b,718,1460,2178,0.73,499.58,500.3
+2026-04-06,2026-04-06 10:37:53,You Have An Amazing Memory - Workbook.pdf,.pdf,ollama/gemma4:26b,3669,2123,5792,4.32,859.21,863.53
+2026-04-06,2026-04-06 10:54:47,Microsoft_Expanded_Cloud_Logs_Implementation_Playbook_1737260229.pdf,.pdf,ollama/gemma4:26b,5599,2096,7695,5.61,1008.26,1013.87
+2026-04-06,2026-04-06 10:57:26,20220512-RPT-Data_in_Motion-EN_US.pdf,.pdf,ollama/gemma4:26b,0,0,0,11.66,147.44,159.11
+2026-04-06,2026-04-06 11:03:49,Who_Should_Develop_Which_AI_Evaluations_1739343103.pdf,.pdf,ollama/gemma4:26b,1792,2016,3808,3.72,379.02,382.74
+2026-04-06,2026-04-06 11:06:32,It - OT Secs.pdf,.pdf,ollama/gemma4:26b,0,0,0,1.37,161.75,163.12
+2026-04-06,2026-04-06 11:44:28,audible-writing creative nonfiction.pdf,.pdf,ollama/gemma4:26b,8192,1323,9515,5.69,2270.11,2275.8
+2026-04-06,2026-04-06 11:45:53,116_Best_Cybersecurity_Tools_For_You__1767699386.pdf,.pdf,ollama/gemma4:26b,0,0,0,0.33,84.59,84.92
+2026-04-06,2026-04-06 12:05:06,半导体供应链中新兴的弹性-BCG&SIA-2024.5-38页 2024-08-04 16_04_10.pdf,.pdf,ollama/gemma4:26b,5136,2085,7221,15.35,1137.18,1152.53
+2026-04-06,2026-04-06 12:17:48,Microsoft_Lessons_from_Red_Teaming_100_Gen_AI_Products_1737306397.pdf,.pdf,ollama/gemma4:26b,2456,2085,4541,4.65,757.42,762.07
+2026-04-06,2026-04-06 12:31:01,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-06,2026-04-06 12:37:25,Information Paper on AI Risk Management Final.pdf,.pdf,ollama/gemma4:26b,4409,2320,6729,4.93,379.15,384.08
+2026-04-06,2026-04-06 13:05:42,AAAI-2025-PresPanel-Report-FINAL.pdf,.pdf,ollama/gemma4:26b,8192,1187,9379,8.3,1688.15,1696.44
+2026-04-06,2026-04-06 13:08:31,中国AI大混战背后-想超越美国 又离不开美国 - 纽约时报中文网.pdf,.pdf,ollama/gemma4:26b,0,0,0,0.35,168.69,169.04
+2026-04-06,2026-04-06 13:33:07,audible-analysis and critique writing.pdf,.pdf,ollama/gemma4:26b,7638,2050,9688,5.25,1470.39,1475.64
+2026-04-06,2026-04-06 13:51:45,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-06,2026-04-06 13:57:09,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-06,2026-04-06 14:03:38,csfforesight2024.pdf,.pdf,ollama/gemma4:26b,8192,890,9082,6.64,382.3,388.94
+2026-04-06,2026-04-06 14:06:02,Haunted Empire-Kindle Notes.pdf,.pdf,ollama/gemma4:26b,0,0,0,0.14,142.99,143.13
+2026-04-06,2026-04-06 19:38:19,WEF the future of work report.pdf,.pdf,ollama/gemma4:26b,8192,1299,9491,27.67,19909.38,19937.05
+2026-04-06,2026-04-06 20:00:42,ISO-IEC JTC 1-SC 27-WG 4_N6788_Proposed text for ISO-IEC DIS 27090.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-07,2026-04-07 04:03:48,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-07,2026-04-07 04:39:04,ISO-IEC JTC 1-SC 27-WG 4_N6788_Proposed text for ISO-IEC DIS 27090.pdf,.pdf,ollama/gemma4:26b,7138,2082,9220,5.64,2110.38,2116.02
+2026-04-07,2026-04-07 05:18:18,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-07,2026-04-07 05:30:39,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-07,2026-04-07 05:54:34,csa_report_2022.pdf,.pdf,ollama/gemma4:26b,67181,23334,90515,3.14,1431.9,1435.04
+2026-04-07,2026-04-07 06:07:57,audible-understanding complexity.pdf,.pdf,ollama/gemma4:26b,34548,11459,46007,2.49,800.84,803.33
+2026-04-07,2026-04-07 06:13:46,HealthCheckReport_171123_0514.pdf,.pdf,ollama/gemma4:26b,10276,5090,15366,2.42,345.96,348.38
+2026-04-07,2026-04-07 06:26:04,OWASP_Agentic_AI_Threats_and_Mitigations_1740195294.pdf,.pdf,ollama/gemma4:26b,24579,10528,35107,3.5,734.49,737.99
+2026-04-07,2026-04-07 06:29:16,[EN]長谷川_DFIR_APAC_SUMMIT_2023_0901[94].pdf,.pdf,ollama/gemma4:26b,3952,1909,5861,1.24,191.13,192.37
+2026-04-07,2026-04-07 06:38:46,security-behavior-1-s2.0-S0040162523007138-main.pdf,.pdf,ollama/gemma4:26b,30828,7667,38495,3.85,566.16,570.01
+2026-04-07,2026-04-07 06:41:30,jules_white_ntu_talk_Jan24.pdf,.pdf,ollama/gemma4:26b,3512,1580,5092,0.9,163.17,164.07
+2026-04-07,2026-04-07 06:44:12,Book Review-Why Cybersecurity Fails in America.pdf,.pdf,ollama/gemma4:26b,3573,1466,5039,0.56,161.64,162.2
+2026-04-07,2026-04-07 06:49:54,warning-upgrade-your-personal-operating-model.pdf,.pdf,ollama/gemma4:26b,7782,4872,12654,1.22,340.01,341.22
+2026-04-07,2026-04-07 07:53:02,"AI-Driven Project Management Harnessing the Power of Artificial Intelligence and ChatGPT (Bainey, Kristian).pdf",.pdf,ollama/gemma4:26b,194008,58436,252444,16.35,3772.47,3788.83
+2026-04-07,2026-04-07 07:53:06,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-07,2026-04-07 08:00:26,the-next-frontier-for-ai-in-china-could-add-$600-billion-to-its-economy.pdf,.pdf,ollama/gemma4:26b,10986,5655,16641,4.12,435.32,439.43
+2026-04-07,2026-04-07 08:38:44,Singapore-Cyber-Landscape-2022.pdf,.pdf,ollama/gemma4:26b,105793,35404,141197,3.92,2294.1,2298.01
+2026-04-07,2026-04-07 08:44:07,Introducing the AI Alliance.pdf,.pdf,ollama/gemma4:26b,8097,4547,12644,1.45,321.45,322.91
+2026-04-07,2026-04-07 09:27:20,C_2025_884_1_EN_annexe_acte_autonome_cp_part1_v4_4YAkRZf5bMIWOuMqiKMIGySPo_112367.pdf,.pdf,ollama/gemma4:26b,127901,40363,168264,15.23,2577.72,2592.95
+2026-04-07,2026-04-07 09:42:25,US_Open_Source_AI_Governance_1741594189.pdf,.pdf,ollama/gemma4:26b,42534,12995,55529,5.02,900.15,905.17
+2026-04-07,2026-04-07 09:44:55,Cybersecurity_Outlook_2025_1737260334.pdf,.pdf,ollama/gemma4:26b,825,1202,2027,0.43,150.11,150.54
+2026-04-07,2026-04-07 15:34:33,【电子阅读版】中国企业“出海”之路投融资全路径.pdf,.pdf,ollama/gemma4:26b,1037422,146050,1183472,139.84,20837.67,20977.51
+2026-04-07,2026-04-07 15:37:18,The_Best_Tool_for_CISOs_to_Evaluate_Third_Party_IS_Risk__1741746681.pdf,.pdf,ollama/gemma4:26b,4186,1773,5959,1.55,161.93,163.47
+2026-04-07,2026-04-07 15:44:56,NIST.CSWP.29.pdf,.pdf,ollama/gemma4:26b,16946,7006,23952,3.0,454.72,457.72
+2026-04-07,2026-04-07 15:49:59,Conference_White_Paper_Steps_Towards_AI_Governance_1741746626.pdf,.pdf,ollama/gemma4:26b,8712,4870,13582,2.34,300.95,303.29
+2026-04-07,2026-04-07 15:50:00,audible-mental model 2.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-07,2026-04-07 16:00:27,ssrn-4849578.pdf,.pdf,ollama/gemma4:26b,36418,8848,45266,5.34,622.02,627.35
+2026-04-07,2026-04-07 16:17:08,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-07,2026-04-07 16:17:12,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-07,2026-04-07 16:17:12,audible-mental model 2.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-07,2026-04-07 18:00:00,Gnedenko-Theory of Probability.pdf,.pdf,ollama/gemma4:26b,166094,39180,205274,20.42,6147.2,6167.62
+2026-04-07,2026-04-07 18:29:11,Implementation_Guide_for_the_U_K_AI_Cyber_Security_CoP_1739342849.pdf,.pdf,ollama/gemma4:26b,45698,16071,61769,10.37,1740.31,1750.68
+2026-04-07,2026-04-07 18:51:26,NTU Memory Talk Slides (6 October 2023) Final Version PDF.pdf,.pdf,ollama/gemma4:26b,42681,11278,53959,8.6,1326.67,1335.27
+2026-04-07,2026-04-07 18:51:26,audible-mental model 1.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-07,2026-04-07 19:18:21,PC in AI for Cybersecurity 2024 July 1 0800 hrs.pdf,.pdf,ollama/gemma4:26b,8906,5318,14224,2.45,1611.8,1614.25
+2026-04-07,2026-04-07 19:53:30,Equifax-Report.pdf,.pdf,ollama/gemma4:26b,71893,19449,91342,9.98,2099.14,2109.12
+2026-04-07,2026-04-07 19:57:54,Hacker Stole Secrets From OpenAI - SecurityWeek.pdf,.pdf,ollama/gemma4:26b,2537,1581,4118,1.38,262.49,263.88
+2026-04-07,2026-04-07 20:13:02,audible-superintelligence.pdf,.pdf,ollama/gemma4:26b,21569,7953,29522,4.23,904.43,908.66
+2026-04-07,2026-04-07 20:35:13,global-threat-report-2024-cs.pdf,.pdf,ollama/gemma4:26b,32230,12052,44282,10.28,1320.79,1331.07
+2026-04-07,2026-04-07 20:38:41,Assessing%20Cyber%20Threat%20Intelligence%20Threat%20Feeds_508c.pdf,.pdf,ollama/gemma4:26b,1624,1352,2976,0.46,206.67,207.14
+2026-04-07,2026-04-07 22:10:08,audible-storytelling tips.pdf,.pdf,ollama/gemma4:26b,259060,26775,285835,7.78,5479.58,5487.36
+2026-04-07,2026-04-07 22:15:54,AI-Safety-Perspectives-from-an-AI-Practitioner.pdf,.pdf,ollama/gemma4:26b,3295,1593,4888,0.7,345.77,346.47
+2026-04-07,2026-04-07 23:21:20,audible-the art of investing.pdf,.pdf,ollama/gemma4:26b,104247,31588,135835,9.09,3916.04,3925.13
+2026-04-07,2026-04-07 23:26:14,DL25 Lecture AI APP_NVIDIA_Highflyer_250131_225519.pdf,.pdf,ollama/gemma4:26b,2694,1960,4654,0.62,293.61,294.23
+2026-04-07,2026-04-07 23:44:05,CoT_Monitoring.pdf,.pdf,ollama/gemma4:26b,25587,8988,34575,3.87,1067.59,1071.46
+2026-04-07,2026-04-07 23:53:24,ISO-IEC JTC 1-SC 27-WG 4_N6815_Response Proposed ISO-IEC DIS 27090.pdf,.pdf,ollama/gemma4:26b,13351,4396,17747,2.59,555.86,558.45
+2026-04-08,2026-04-08 00:04:33,ISO-IEC JTC 1-SC 27-WG 4_N6818_Evolution of cybersecurity standards .pdf,.pdf,ollama/gemma4:26b,14206,5874,20080,2.98,666.67,669.64
+2026-04-08,2026-04-08 00:22:08,Cyber_Security_Risks_to_Artificial_Intelligence_1767702101.pdf,.pdf,ollama/gemma4:26b,26608,9477,36085,4.0,1050.63,1054.63
+2026-04-08,2026-04-08 00:47:10,audible-loonshots.pdf,.pdf,ollama/gemma4:26b,41687,13852,55539,7.01,1494.43,1501.44
+2026-04-08,2026-04-08 00:58:09,Cybersecurity_Guide_2024_Final_1738914645.pdf,.pdf,ollama/gemma4:26b,11160,5553,16713,2.17,657.45,659.62
+2026-04-08,2026-04-08 01:32:02,SEA-Outlook-2024-34-Full-Report 2024-08-04 16_03_30.pdf,.pdf,ollama/gemma4:26b,36142,12903,49045,17.97,2015.03,2033.0
+2026-04-08,2026-04-08 01:46:50,audible-kaizen way.pdf,.pdf,ollama/gemma4:26b,20079,8131,28210,1.07,886.34,887.41
+2026-04-08,2026-04-08 01:56:16,钱伯斯全球实践指南：医疗保健行业：医疗设备2024_32页_1mb.pdf,.pdf,ollama/gemma4:26b,11740,4730,16470,2.66,563.9,566.56
+2026-04-08,2026-04-08 02:17:34,高盛：AI会吃掉软件吗？（英）-2026.3.9-31页.pdf,.pdf,ollama/gemma4:26b,40391,15201,55592,9.25,1267.98,1277.23
+2026-04-08,2026-04-08 04:14:26,"Optimal Design of Experiments A Case Study Approach (Peter Goos, Bradley Jones).pdf",.pdf,ollama/gemma4:26b,380853,89495,470348,12.13,6999.77,7011.9
+2026-04-08,2026-04-08 06:33:55,Design and Analysis of Experiments Solutions Manual (Douglas C. Montgomery).pdf,.pdf,ollama/gemma4:26b,411964,48525,460489,23.74,8345.99,8369.73
+2026-04-08,2026-04-08 06:40:05,AI_and_Personal_Data_CEDPO_1737281885.pdf,.pdf,ollama/gemma4:26b,10694,5619,16313,1.16,368.59,369.75
+2026-04-08,2026-04-08 06:46:58,Consent_or_Pay_after_EDPB_s_Opinion_08_2024_1741967202.pdf,.pdf,ollama/gemma4:26b,13510,5635,19145,5.84,407.46,413.29
+2026-04-08,2026-04-08 06:56:34,2501.16513v2.pdf,.pdf,ollama/gemma4:26b,23817,8984,32801,1.97,573.93,575.9
+2026-04-08,2026-04-08 07:05:40,AIIA_v2__1737281943.pdf,.pdf,ollama/gemma4:26b,23410,8858,32268,2.63,542.75,545.38
+2026-04-08,2026-04-08 07:11:38,Guidelines_on_an_AI_system_1738914676.pdf,.pdf,ollama/gemma4:26b,10981,5964,16945,1.59,356.17,357.76
+2026-04-08,2026-04-08 07:18:44,2024-05-17-kapoor-et-al.pdf,.pdf,ollama/gemma4:26b,15965,7305,23270,1.75,424.37,426.12
+2026-04-08,2026-04-08 07:21:47,audible-thinking in bet.pdf,.pdf,ollama/gemma4:26b,4008,1608,5616,0.72,182.67,183.39
+2026-04-08,2026-04-08 07:27:44,Mapping_NIST_CSF_2_0_and_ISO_27001_1740195322.pdf,.pdf,ollama/gemma4:26b,11655,5579,17234,2.31,354.15,356.46
+2026-04-08,2026-04-08 07:30:13,SANS_SSA_maturity-model-ebook-2025 - Digital.pdf,.pdf,ollama/gemma4:26b,4697,1578,6275,1.02,148.13,149.15
+2026-04-08,2026-04-08 07:32:29,China New AI Governance Initiatives Shouldn’t Be Ignored - Carnegie Endowment for International Peace.pdf,.pdf,ollama/gemma4:26b,2075,1576,3651,0.63,135.96,136.58
+2026-04-08,2026-04-08 08:26:22,audible-law school for everyone.pdf,.pdf,ollama/gemma4:26b,205224,54554,259778,28.86,3203.46,3232.32
+2026-04-08,2026-04-08 08:38:30,TRM Guidelines 18 January 2021.pdf,.pdf,ollama/gemma4:26b,30555,12301,42856,5.13,723.19,728.32
+2026-04-08,2026-04-08 08:44:11,projecting-the-global-value-of-cloud-3-trillion-is-up-for-grabs-for-companies-that-go-beyond-adoption.pdf,.pdf,ollama/gemma4:26b,8440,5584,14024,1.3,339.35,340.65
+2026-04-08,2026-04-08 08:52:32,OWASP_LLM_GenAI_Security_Solutions_Reference_Guide__1741746728.pdf,.pdf,ollama/gemma4:26b,21075,7641,28716,10.42,490.34,500.75
+2026-04-08,2026-04-08 09:06:04,2402.01030v4.pdf,.pdf,ollama/gemma4:26b,52510,12373,64883,6.7,805.13,811.83
+2026-04-08,2026-04-08 09:08:13,"From Gmail to Word, your privacy settings and AI in a new relationship.pdf",.pdf,ollama/gemma4:26b,3775,1333,5108,1.08,128.84,129.92
+2026-04-08,2026-04-08 09:15:10,Scalable_deployment_of_AI_Agents_in_the_Enterprise_1737008039.pdf,.pdf,ollama/gemma4:26b,15254,7141,22395,2.46,414.42,416.88
+2026-04-08,2026-04-08 09:21:47,adversarial-misuse-generative-ai.pdf,.pdf,ollama/gemma4:26b,12801,6678,19479,1.74,394.56,396.3
+2026-04-08,2026-04-08 09:23:59,"360 released the enterprise-level large-scale model strategy, Zhou Hongyi: AI development must serve the digitalization of the industry - iNEWS.pdf",.pdf,ollama/gemma4:26b,849,1574,2423,0.23,132.03,132.25
+2026-04-08,2026-04-08 09:54:04,audible-the entreprener toolkit.pdf,.pdf,ollama/gemma4:26b,213676,21800,235476,6.56,1798.21,1804.77
+2026-04-08,2026-04-08 09:56:51,个人信息出境标准合同-draft for comment.pdf,.pdf,ollama/gemma4:26b,5046,1954,7000,0.8,166.73,167.53
+2026-04-08,2026-04-08 10:08:42,rsch_pdf_30305836.pdf,.pdf,ollama/gemma4:26b,30663,11195,41858,5.03,705.25,710.29
+2026-04-08,2026-04-08 10:10:31,ebook-detecting-fake-candidates-vsl.pdf,.pdf,ollama/gemma4:26b,1394,1243,2637,0.87,108.86,109.74
+2026-04-08,2026-04-08 10:14:59,Revolutionizing_Penetration_Testing_AI-Powered_Aut.pdf,.pdf,ollama/gemma4:26b,8490,4162,12652,1.32,266.28,267.61
+2026-04-08,2026-04-08 11:10:03,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-08,2026-04-08 11:10:07,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-08,2026-04-08 11:10:07,audible-mental model 2.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-08,2026-04-08 11:10:07,audible-mental model 1.pdf,.pdf,ollama/gemma4:26b,0,0,0,0,0,0
+2026-04-08,2026-04-08 11:12:13,"Four Chinese generative AI models pass official assessment, establishing compliance directory for industry: observers - Global Times.pdf",.pdf,ollama/gemma4:26b,2128,1465,3593,0.39,125.17,125.56
+2026-04-08,2026-04-08 11:32:18,DBS LAYS OUT COMPREHENSIVE ROADMAP TO IMPROVE TECHNOLOGY RESILIENCY.pdf,.pdf,ollama/gemma4:26b,5140,1662,6802,0.91,1203.24,1204.15
+2026-04-08,2026-04-08 11:33:52,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-08,2026-04-08 11:33:56,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-08,2026-04-08 11:33:56,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-08,2026-04-08 11:33:56,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-08,2026-04-08 11:35:24,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-08,2026-04-08 11:35:27,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-08,2026-04-08 11:35:27,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-08,2026-04-08 11:35:27,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-08,2026-04-08 11:46:26,1764879595824 (1).pdf,.pdf,ollama/gemma4:latest,37209,12097,49306,5.54,652.94,658.48
+2026-04-08,2026-04-08 11:48:24,HGB-中欧商学院-20240824-R.pdf,.pdf,ollama/gemma4:latest,4422,1452,5874,1.06,117.34,118.4
+2026-04-08,2026-04-08 11:52:28,Harvard-Business-Revew-Generative-AI-Pulse-Survey-Final.pdf,.pdf,ollama/gemma4:latest,9058,4128,13186,1.27,242.41,243.68
+2026-04-08,2026-04-08 12:31:06,audible-effective research.pdf,.pdf,ollama/gemma4:latest,124764,36046,160810,12.27,2305.77,2318.04
+2026-04-08,2026-04-08 12:49:38,Generative_AI_for_Internet_of_Things_Security_Chal.pdf,.pdf,ollama/gemma4:latest,57040,14408,71448,3.3,1108.26,1111.56
+2026-04-08,2026-04-08 12:51:29,2023 Instructor NDA-mengchow .pdf,.pdf,ollama/gemma4:latest,3920,1255,5175,0.77,110.47,111.24
+2026-04-08,2026-04-08 13:02:12,2209.09125v1.pdf,.pdf,ollama/gemma4:latest,32934,10120,43054,4.92,637.6,642.52
+2026-04-08,2026-04-08 13:14:11,Fully_Autonomous_AI_Agents_Should_Not_be_Developed_1739342579.pdf,.pdf,ollama/gemma4:latest,38456,12039,50495,1.17,717.88,719.05
+2026-04-08,2026-04-08 13:16:04,BIA_Cybersecurity__1741967271.pdf,.pdf,ollama/gemma4:latest,2396,1564,3960,0.63,112.43,113.06
+2026-04-08,2026-04-08 13:18:56,Powershell_1741967120.pdf,.pdf,ollama/gemma4:latest,6090,1734,7824,2.16,170.31,172.47
+2026-04-08,2026-04-08 13:23:30,Global_Index_for_AI_Safety_1739342701.pdf,.pdf,ollama/gemma4:latest,10564,4191,14755,2.87,271.23,274.09
+2026-04-08,2026-04-08 13:30:47,PWC_Agentic_AI_1741967148.pdf,.pdf,ollama/gemma4:latest,13929,7340,21269,1.74,435.41,437.15
+2026-04-08,2026-04-08 13:37:42,AI_incidents_1740895477.pdf,.pdf,ollama/gemma4:latest,16158,6601,22759,3.93,410.13,414.07
+2026-04-08,2026-04-08 13:39:22,Bybit Breach_dmun_20250222v1.pdf,.pdf,ollama/gemma4:latest,3412,1165,4577,0.51,100.27,100.77
+2026-04-08,2026-04-08 15:07:40,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:01:32,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:01:36,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:01:36,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:01:37,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:10:04,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:10:07,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:10:07,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:10:07,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:12:06,MAS TCRS 2026-03 ADVISORY ON STRENGTHENING CYBER SECURITY POSTURE.pdf,.pdf,ollama/gemma4:latest,2348,1960,4308,0.44,118.04,118.48
+2026-04-09,2026-04-09 02:18:34,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:18:34,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:18:35,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:18:38,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:22:58,Microsoft_Expanded_Cloud_Logs_Implementation_Playbook_1737260229.pdf,.pdf,ollama/gemma4:latest,5600,1894,7494,3.59,112.81,116.39
+2026-04-09,2026-04-09 02:22:58,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:22:58,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:22:58,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:23:02,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:23:34,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:23:34,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:23:34,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:23:38,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:24:44,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:24:44,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:24:44,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:24:48,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:27:21,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:27:21,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:27:22,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:27:25,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:56:14,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:56:14,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:56:14,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:56:17,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:59:40,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:59:40,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:59:40,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 02:59:44,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 03:03:34,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 03:03:34,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 03:03:34,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 03:03:38,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 03:58:47,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 03:58:47,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 03:58:47,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 03:58:50,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:00:32,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:00:32,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:00:32,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:00:35,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:07:22,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:07:22,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:07:22,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:07:26,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:09:59,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:09:59,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:09:59,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:10:03,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:17:01,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:17:01,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:17:01,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:17:04,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:38:31,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:38:31,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:38:31,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:38:34,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:45:30,Compliance and Risk explained with 2 cows.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:45:30,audible-mental model 2.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:45:30,audible-mental model 1.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0
+2026-04-09,2026-04-09 04:45:33,EnsignxSTH IR Day_TheEdge 30Nov2023_231201_085417.pdf,.pdf,ollama/gemma4:latest,0,0,0,0,0,0

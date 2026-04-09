@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  ai-agent:
+    build: .
+    container_name: ricemaker
+    ports:
+      - "1688:1688"
+    volumes:
+      # Map the Mac's root-level access points
+      - /Volumes:/Volumes
+      - /Users/bstove:/Users/bstove
+      # Keep app state local to the project
+      - ./intermediate:/app/intermediate
+      - ./plan.json:/app/plan.json
+      - ./stats.csv:/app/stats.csv
+      - ./history.csv:/app/history.csv
+      - ./keys.json:/app/keys.json
+      - ./config.json:/app/config.json
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # Vital for connecting to host Ollama
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
