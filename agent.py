@@ -605,6 +605,56 @@ if __name__ == "__main__":
                     logging.error(f"Could not access {f_path}: {e}")
         except Exception as e:
             logging.error(f"Error during startup scan of {input_path}: {e}")
+
+        # --- NEW: Auto-recover stuck pending files ---
+        try:
+            plan = agent.load_json('plan.json')
+            archive_folder = Path(agent.config.get('archive_folder', './reviewed'))
+            host_legacy = Path('/Users/bstove/LocalDocs/projects/ricemaker/reviewed')
+            legacy_archive = Path('./reviewed')
+
+            for filename, info in plan.get('files', {}).items():
+                if info.get('status') == 'pending':
+                    orig_file = Path(input_path) / filename
+                    if not orig_file.exists():
+                        logging.info(f"Pending file {filename} missing from input. Attempting to recover...")
+                        found_path = None
+                        
+                        # Search archive_folder
+                        if archive_folder.exists():
+                            for p in archive_folder.rglob(filename):
+                                if p.is_file():
+                                    found_path = p
+                                    break
+                        
+                        # Search host-mapped legacy archive
+                        if not found_path and host_legacy.exists():
+                            for p in host_legacy.rglob(filename):
+                                if p.is_file():
+                                    found_path = p
+                                    break
+
+                        # Search container legacy archive
+                        if not found_path and legacy_archive.exists() and legacy_archive.absolute() != archive_folder.absolute():
+                            for p in legacy_archive.rglob(filename):
+                                if p.is_file():
+                                    found_path = p
+                                    break
+
+                        if found_path:
+                            try:
+                                import shutil
+                                shutil.move(str(found_path), str(orig_file))
+                                logging.info(f"Successfully recovered {filename} to {input_path}.")
+                                agent.queue_file(orig_file)
+                            except Exception as e:
+                                logging.error(f"Failed to move {filename}: {e}")
+                        else:
+                            logging.warning(f"File {filename} not found in archives. Marking as missing.")
+                            agent.update_state(filename, "error (missing)")
+        except Exception as e:
+            logging.error(f"Error during auto-recovery scan: {e}")
+
     else:
         logging.error(f"Input path {input_path} is not a directory or is inaccessible. Check your Docker volume mounts.")
     

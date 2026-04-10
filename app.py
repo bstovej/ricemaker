@@ -190,10 +190,13 @@ def rereview(filename):
     config = get_data('config.json')
     input_folder = Path(config.get('input_folder', './input'))
     archive_folder = Path(config.get('archive_folder', './reviewed'))
+
+    # 0. Check legacy archives (prioritize host-mapped path if accessible)
+    host_legacy = Path('/Users/bstove/LocalDocs/projects/ricemaker/reviewed')
     legacy_archive = Path('./reviewed')
-    
+
     orig_file = input_folder / decoded_name
-    
+
     # 1. Check if it's already in the input folder
     if not orig_file.exists():
         # 2. Try to find it in the archive_folder (recursively)
@@ -203,15 +206,22 @@ def rereview(filename):
                 if p.is_file():
                     found_path = p
                     break
-        
-        # 3. Try to find it in the legacy local archive folder if not found
+
+        # 3. Try to find it in the host-mapped legacy archive folder
+        if not found_path and host_legacy.exists():
+            for p in host_legacy.rglob(decoded_name):
+                if p.is_file():
+                    found_path = p
+                    break
+
+        # 4. Try to find it in the container-local legacy archive folder
         if not found_path and legacy_archive.exists() and legacy_archive.absolute() != archive_folder.absolute():
             for p in legacy_archive.rglob(decoded_name):
                 if p.is_file():
                     found_path = p
                     break
-                    
-        # 4. If found in archive, move it back to input_folder
+
+        # 5. If found in any archive, move it back to input_folder
         if found_path:
             try:
                 shutil.move(str(found_path), str(orig_file))
@@ -219,8 +229,8 @@ def rereview(filename):
                 return jsonify({"success": False, "error": f"Failed to move from archive: {str(e)}"})
         else:
             return jsonify({"success": False, "error": "file_not_found"})
-            
-    # 5. Reset status and history
+
+    # 6. Reset status and history
     if plan_path.exists():
         plan = json.loads(plan_path.read_text())
         if 'files' in plan and decoded_name in plan['files']:
@@ -228,7 +238,6 @@ def rereview(filename):
             # Reset timestamp so it shows up at the top of the dashboard
             plan['files'][decoded_name]['timestamp'] = time.time()
             plan_path.write_text(json.dumps(plan, indent=2))
-            
     if history_path.exists():
         try:
             df = pd.read_csv(history_path)
