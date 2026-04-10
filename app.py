@@ -189,26 +189,61 @@ def rereview(filename):
     
     config = get_data('config.json')
     input_folder = Path(config.get('input_folder', './input'))
+    archive_folder = Path(config.get('archive_folder', './reviewed'))
+    legacy_archive = Path('./reviewed')
+    
     orig_file = input_folder / decoded_name
     
+    # 1. Check if it's already in the input folder
     if not orig_file.exists():
-        return jsonify({"success": False, "error": "file_not_found"})
+        # 2. Try to find it in the archive_folder (recursively)
+        found_path = None
+        if archive_folder.exists():
+            for p in archive_folder.rglob(decoded_name):
+                if p.is_file():
+                    found_path = p
+                    break
         
+        # 3. Try to find it in the legacy local archive folder if not found
+        if not found_path and legacy_archive.exists() and legacy_archive.absolute() != archive_folder.absolute():
+            for p in legacy_archive.rglob(decoded_name):
+                if p.is_file():
+                    found_path = p
+                    break
+                    
+        # 4. If found in archive, move it back to input_folder
+        if found_path:
+            try:
+                shutil.move(str(found_path), str(orig_file))
+            except Exception as e:
+                return jsonify({"success": False, "error": f"Failed to move from archive: {str(e)}"})
+        else:
+            return jsonify({"success": False, "error": "file_not_found"})
+            
+    # 5. Reset status and history
     if plan_path.exists():
         plan = json.loads(plan_path.read_text())
         if 'files' in plan and decoded_name in plan['files']:
             plan['files'][decoded_name]['status'] = 'pending'
+            # Reset timestamp so it shows up at the top of the dashboard
+            plan['files'][decoded_name]['timestamp'] = time.time()
             plan_path.write_text(json.dumps(plan, indent=2))
             
     if history_path.exists():
         try:
             df = pd.read_csv(history_path)
+            # Remove all entries for this file
             df = df[~df['original_path'].fillna('').str.endswith(decoded_name)]
             df.to_csv(history_path, index=False)
         except Exception as e:
             print(f"Error updating history: {e}")
             
-    os.utime(orig_file, None)
+    # Touch the file so the watcher picks it up
+    try:
+        os.utime(orig_file, None)
+    except:
+        pass
+        
     return jsonify({"success": True})
 
 @app.route('/api/files/move', methods=['POST'])

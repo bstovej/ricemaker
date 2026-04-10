@@ -199,15 +199,16 @@ async function refreshDashboard() {
             console.error("Failed to sync agent state", e);
         }
         
-        const statusRes = await fetch('/api/status');
+        const ts = Date.now();
+        const statusRes = await fetch(`/api/status?t=${ts}`);
         const plan = await statusRes.json();
         const planFiles = plan.files || {};
 
-        const sessionRes = await fetch('/api/session');
+        const sessionRes = await fetch(`/api/session?t=${ts}`);
         const sessionData = await sessionRes.json();
         const sessionStart = sessionData.session_start || 0;
 
-        const filesRes = await fetch('/api/files');
+        const filesRes = await fetch(`/api/files?t=${ts}`);
         const folderFiles = await filesRes.json();
         
         const queueBody = document.getElementById('status-table-body');
@@ -221,20 +222,29 @@ async function refreshDashboard() {
         let completedCount = 0;
         let errorCount = 0;
         let pendingCount = 0;
+        let missingCount = 0;
         
+        const folderFileNames = new Set(folderFiles.map(f => f.name));
         const mergedList = folderFiles.map(f => {
             const planInfo = planFiles[f.name];
             return {
                 name: f.name,
                 status: planInfo ? planInfo.status : 'pending',
                 timestamp: planInfo ? planInfo.timestamp : f.modified,
-                model: planInfo ? planInfo.model : 'N/A'
+                model: planInfo ? planInfo.model : 'N/A',
+                exists: true
             };
         });
 
         Object.entries(planFiles).forEach(([name, info]) => {
-            if (!folderFiles.find(f => f.name === name)) {
-                mergedList.push({ name, status: info.status, timestamp: info.timestamp, model: info.model });
+            if (!folderFileNames.has(name)) {
+                mergedList.push({ 
+                    name, 
+                    status: info.status, 
+                    timestamp: info.timestamp, 
+                    model: info.model,
+                    exists: false 
+                });
             }
         });
 
@@ -242,25 +252,34 @@ async function refreshDashboard() {
             const isSelected = selectedFile === f.name;
             const dateStr = new Date(f.timestamp * 1000).toLocaleString();
             const modelName = f.model || 'Unknown';
-            const badgeClass = f.status.toLowerCase().split(' ')[0].replace('(', '').replace(')', '');
-            const displayStatus = f.status;
+            
+            let displayStatus = f.status;
+            let badgeClass = f.status.toLowerCase().split(' ')[0].replace('(', '').replace(')', '');
+            
+            if (!f.exists) {
+                displayStatus = 'Missing from Folder';
+                badgeClass = 'error';
+            }
 
             const isCurrentSession = f.timestamp >= sessionStart;
             const isError = f.status.startsWith('error');
             const isProcessing = f.status === 'pending' || f.status.includes('Processing');
 
-            if (!isError && (isCurrentSession || isProcessing)) {
+            if (!isError && (isCurrentSession || isProcessing || !f.exists)) {
                 // Show in Live Queue (Dashboard)
                 pendingCount++;
+                if (!f.exists) missingCount++;
+                
                 if (queueBody) {
                     let statusHtml = `<span class="status-badge ${badgeClass}">${displayStatus}</span>`;
-                    if (f.status === 'completed') statusHtml = `<span class="status-badge completed">Completed</span>`;
-                    if (f.status.startsWith('error')) statusHtml = `<span class="status-badge error">Error</span>`;
+                    if (f.status === 'completed' && f.exists) statusHtml = `<span class="status-badge completed">Completed</span>`;
+                    
+                    const removeBtn = !f.exists ? `<button onclick="event.stopPropagation(); window.removeFile('${f.name}')" class="btn btn-outline" style="padding: 0.1rem 0.4rem; font-size: 0.65rem; margin-left: 0.5rem;"><i data-lucide="trash-2" style="width: 10px; height: 10px;"></i></button>` : '';
 
                     queueBody.innerHTML += `
                         <tr onclick="viewReport('${f.name}')" style="cursor: pointer; background-color: ${isSelected ? 'var(--bg-tertiary)' : 'transparent'};" class="file-row" id="row-${f.name}">
-                            <td style="width: 20%;">${statusHtml}</td>
-                            <td style="font-family: 'JetBrains Mono', monospace; width: 60%;">${f.name}</td>
+                            <td style="width: 25%;">${statusHtml}${removeBtn}</td>
+                            <td style="font-family: 'JetBrains Mono', monospace; width: 55%;">${f.name}</td>
                             <td style="color: var(--text-secondary); width: 20%;">${dateStr}</td>
                         </tr>`;
                 }
@@ -295,6 +314,13 @@ async function refreshDashboard() {
         const truePendingCount = mergedList.filter(f => f.status === 'pending' || f.status.includes('Processing')).length;
         document.getElementById('stat-total').innerText = truePendingCount;
         
+        // Show cleanup button if there are missing files
+        const cleanupBtn = document.getElementById('btn-cleanup-missing');
+        if (cleanupBtn) {
+            cleanupBtn.style.display = missingCount > 0 ? 'inline-flex' : 'none';
+            cleanupBtn.innerHTML = `<i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Clean ${missingCount} Ghost Files`;
+        }
+
         if (document.getElementById('archive-completed-count')) document.getElementById('archive-completed-count').innerText = `${completedCount} files`;
         if (document.getElementById('archive-error-count')) document.getElementById('archive-error-count').innerText = `${errorCount} files`;
 
@@ -405,28 +431,65 @@ window.archiveCurrentFile = async function() {
 
         if (!confirm('Move this file to the reviewed archive?')) return;
         
-        await fetch('/api/files/move', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({files: [selectedFile]}) });
+        const res = await fetch('/api/files/move', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({files: [selectedFile]}) });
+        const resJson = await res.json();
+        if (resJson.errors && resJson.errors.length > 0) {
+            alert('Failed to move file: ' + resJson.errors[0].error);
+        }
         refreshDashboard();
     } catch (err) { console.error(err); }
 };
 
 window.rereviewCurrentFile = async function() {
     if (!selectedFile) return;
+    
+    if (!confirm('Force a re-review of this file? If it was archived, it will be moved back to the input folder.')) return;
+    
     try {
-        const checkRes = await fetch(`/api/check_exists/${encodeURIComponent(selectedFile)}`);
-        const { exists } = await checkRes.json();
+        const res = await fetch(`/api/rereview/${encodeURIComponent(selectedFile)}`, { method: 'POST' });
+        const data = await res.json();
         
-        if (!exists) {
-            if (confirm('File not found in input folder. Would you like to remove it from the file list altogether? (Cancel to put it back manually)')) {
-                await fetch(`/api/remove/${encodeURIComponent(selectedFile)}`, { method: 'POST' });
-                refreshDashboard();
+        if (data.success) {
+            refreshDashboard();
+        } else {
+            if (data.error === 'file_not_found') {
+                if (confirm('File not found in input or archive. Would you like to remove it from the file list altogether?')) {
+                    await fetch(`/api/remove/${encodeURIComponent(selectedFile)}`, { method: 'POST' });
+                    refreshDashboard();
+                }
+            } else {
+                alert('Failed to re-review: ' + (data.error || 'Unknown error'));
             }
-            return;
         }
+    } catch (err) { 
+        console.error(err); 
+        alert('An error occurred while attempting to re-review.');
+    }
+};
 
-        if (!confirm('Force a re-review of this file?')) return;
-        
-        await fetch(`/api/rereview/${encodeURIComponent(selectedFile)}`, { method: 'POST' });
+window.removeFile = async function(filename) {
+    if (!confirm('Remove "' + filename + '" from the plan? This will NOT delete the actual file if it exists.')) return;
+    try {
+        await fetch('/api/remove/' + encodeURIComponent(filename), { method: 'POST' });
         refreshDashboard();
     } catch (err) { console.error(err); }
+};
+
+window.cleanupMissingFiles = async function() {
+    if (!confirm('Remove all files from the plan that are missing from the input folder?')) return;
+    
+    const statusRes = await fetch('/api/status');
+    const plan = await statusRes.json();
+    const planFiles = plan.files || {};
+    
+    const filesRes = await fetch('/api/files');
+    const folderFiles = await filesRes.json();
+    const folderFileNames = new Set(folderFiles.map(f => f.name));
+    
+    const missingFiles = Object.keys(planFiles).filter(name => !folderFileNames.has(name));
+    
+    for (const filename of missingFiles) {
+        await fetch('/api/remove/' + encodeURIComponent(filename), { method: 'POST' });
+    }
+    refreshDashboard();
 };
