@@ -172,18 +172,21 @@ class RicemakerAgent:
 
         # --- NEW: Check History for Skips ---
         completed_paths = self.load_history()
-        if str(file_path.absolute()) in completed_paths:
-            logging.info(f"Skipping {file_path.name} (already found in history.csv)")
+        
+        # Only skip if found in history AND NOT marked as 'pending' in plan.json
+        plan = self.load_json('plan.json')
+        f_plan_status = plan.get('files', {}).get(file_path.name, {}).get('status', '')
+        
+        if str(file_path.absolute()) in completed_paths and f_plan_status != 'pending':
+            logging.info(f"Skipping {file_path.name} (already found in history.csv and status is {f_plan_status})")
             # Update plan.json so UI doesn't think it's pending. Set timestamp=0 so it defaults to Archive view
-            self.update_state(file_path.name, "completed", timestamp=0)
+            if f_plan_status == 'pending': # This should not happen now but for safety
+                self.update_state(file_path.name, "completed", timestamp=0)
             return
 
         logging.info(f"Processing: {file_path.name}")
         
-        # Also check plan.json for session-level status
-        plan = self.load_json('plan.json')
-        f_plan_status = plan.get('files', {}).get(file_path.name, {}).get('status', '')
-        if f_plan_status in ('completed', 'archived') or f_plan_status.startswith('error'):
+        if f_plan_status in ('completed', 'archived'):
             logging.info(f"Skipping {file_path.name} (already processed with status {f_plan_status})")
             return
 
