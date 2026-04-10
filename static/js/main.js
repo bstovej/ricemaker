@@ -253,28 +253,38 @@ async function refreshDashboard() {
             const dateStr = new Date(f.timestamp * 1000).toLocaleString();
             const modelName = f.model || 'Unknown';
             
+            const isCurrentSession = f.timestamp >= sessionStart;
+            const isError = f.status.startsWith('error');
+            const isProcessing = f.status === 'pending' || f.status.includes('Processing');
+            const isArchived = f.status === 'archived';
+            const isCompleted = f.status === 'completed';
+            
+            // A file is a "Ghost" if it's supposed to be processed (pending/processing) but is missing from the folder.
+            const isGhost = !f.exists && isProcessing;
+
             let displayStatus = f.status;
             let badgeClass = f.status.toLowerCase().split(' ')[0].replace('(', '').replace(')', '');
             
-            if (!f.exists) {
+            if (isGhost) {
                 displayStatus = 'Missing from Folder';
                 badgeClass = 'error';
             }
 
-            const isCurrentSession = f.timestamp >= sessionStart;
-            const isError = f.status.startsWith('error');
-            const isProcessing = f.status === 'pending' || f.status.includes('Processing');
+            // Dashboard logic:
+            // - Show it if it's currently processing/pending (even if missing/ghost)
+            // - Show it if it was completed in the CURRENT session AND it's still in the input folder
+            const showInDashboard = !isError && !isArchived && (isProcessing || (isCompleted && isCurrentSession && f.exists));
 
-            if (!isError && (isCurrentSession || isProcessing || !f.exists)) {
+            if (showInDashboard) {
                 // Show in Live Queue (Dashboard)
                 pendingCount++;
-                if (!f.exists) missingCount++;
+                if (isGhost) missingCount++;
                 
                 if (queueBody) {
                     let statusHtml = `<span class="status-badge ${badgeClass}">${displayStatus}</span>`;
                     if (f.status === 'completed' && f.exists) statusHtml = `<span class="status-badge completed">Completed</span>`;
                     
-                    const removeBtn = !f.exists ? `<button onclick="event.stopPropagation(); window.removeFile('${f.name}')" class="btn btn-outline" style="padding: 0.1rem 0.4rem; font-size: 0.65rem; margin-left: 0.5rem;"><i data-lucide="trash-2" style="width: 10px; height: 10px;"></i></button>` : '';
+                    const removeBtn = isGhost ? `<button onclick="event.stopPropagation(); window.removeFile('${f.name}')" class="btn btn-outline" style="padding: 0.1rem 0.4rem; font-size: 0.65rem; margin-left: 0.5rem;"><i data-lucide="trash-2" style="width: 10px; height: 10px;"></i></button>` : '';
 
                     queueBody.innerHTML += `
                         <tr onclick="viewReport('${f.name}')" style="cursor: pointer; background-color: ${isSelected ? 'var(--bg-tertiary)' : 'transparent'};" class="file-row" id="row-${f.name}">
@@ -311,7 +321,7 @@ async function refreshDashboard() {
         });
 
         // The "Queue Size" header should show items that are still to be done
-        const truePendingCount = mergedList.filter(f => f.status === 'pending' || f.status.includes('Processing')).length;
+        const truePendingCount = mergedList.filter(f => !f.status.startsWith('error') && f.status !== 'archived' && (f.status === 'pending' || f.status.includes('Processing'))).length;
         document.getElementById('stat-total').innerText = truePendingCount;
         
         // Show cleanup button if there are missing files
@@ -319,6 +329,7 @@ async function refreshDashboard() {
         if (cleanupBtn) {
             cleanupBtn.style.display = missingCount > 0 ? 'inline-flex' : 'none';
             cleanupBtn.innerHTML = `<i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Clean ${missingCount} Ghost Files`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         if (document.getElementById('archive-completed-count')) document.getElementById('archive-completed-count').innerText = `${completedCount} files`;
@@ -476,7 +487,7 @@ window.removeFile = async function(filename) {
 };
 
 window.cleanupMissingFiles = async function() {
-    if (!confirm('Remove all files from the plan that are missing from the input folder?')) return;
+    if (!confirm('Remove all "ghost" files from the plan (files that are pending but missing from the input folder)?')) return;
     
     const statusRes = await fetch('/api/status');
     const plan = await statusRes.json();
@@ -486,7 +497,11 @@ window.cleanupMissingFiles = async function() {
     const folderFiles = await filesRes.json();
     const folderFileNames = new Set(folderFiles.map(f => f.name));
     
-    const missingFiles = Object.keys(planFiles).filter(name => !folderFileNames.has(name));
+    const missingFiles = Object.keys(planFiles).filter(name => {
+        const info = planFiles[name];
+        const isProcessing = info.status === 'pending' || info.status.includes('Processing');
+        return !folderFileNames.has(name) && isProcessing;
+    });
     
     for (const filename of missingFiles) {
         await fetch('/api/remove/' + encodeURIComponent(filename), { method: 'POST' });
