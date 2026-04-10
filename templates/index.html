@@ -332,6 +332,7 @@
             </div>
             <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 1rem;">
                 <div id="agent-controls" style="display: flex; gap: 0.5rem;">
+                    <button id="btn-cleanup-missing" class="btn btn-danger" onclick="window.cleanupMissingFiles()" style="display: none;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Clean Ghost Files</button>
                     <button id="btn-agent-main" class="btn btn-primary" onclick="window.toggleAgentState()">Loading...</button>
                     <button id="btn-agent-stop" class="btn btn-danger" onclick="window.stopAgent()" style="display: none;"><i data-lucide="square" style="width: 14px; height: 14px;"></i> Stop</button>
                 </div>
@@ -511,7 +512,7 @@
         </div>
     </main>
 
-    <script src="{{ url_for('static', filename='js/main.js', v=8) }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js', v=9) }}"></script>
     <script>
         // Initialize Lucide icons
         lucide.createIcons();

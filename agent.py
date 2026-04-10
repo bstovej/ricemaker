@@ -165,6 +165,11 @@ class RicemakerAgent:
         self.active_model = self.config.get('model_name')
         self._update_session_file()
         
+        if not file_path.exists():
+            logging.error(f"File {file_path} not found. Marking as missing.")
+            self.update_state(file_path.name, "error (missing)")
+            return
+
         # --- NEW: Check History for Skips ---
         completed_paths = self.load_history()
         if str(file_path.absolute()) in completed_paths:
@@ -483,7 +488,14 @@ class RicemakerAgent:
     def run_worker(self):
         """Background thread to process files from the queue based on agent state."""
         logging.info("Agent worker thread started.")
+        last_heartbeat = 0
+        
         while True:
+            # Heartbeat every 10 minutes
+            if time.time() - last_heartbeat > 600:
+                logging.info("Agent Heartbeat: Idle and waiting for files...")
+                last_heartbeat = time.time()
+
             # Check agent state
             if Path('agent_state.json').exists():
                 try:
@@ -506,8 +518,18 @@ class RicemakerAgent:
             try:
                 # Use timeout so we can periodically check state
                 priority, file_path_str = self.file_queue.get(timeout=2)
+                
+                # Check if file still exists before processing
+                if not Path(file_path_str).exists():
+                    logging.warning(f"File {file_path_str} disappeared before processing. Skipping.")
+                    self.file_queue.task_done()
+                    continue
+                    
                 self.process_file(Path(file_path_str))
                 self.file_queue.task_done()
+                
+                # Reset heartbeat after processing to avoid immediate heartbeat after work
+                last_heartbeat = time.time()
             except queue.Empty:
                 pass
             except Exception as e:

@@ -1,3 +1,4 @@
+.DS_Store
 90_System/
 GEMINI.md
 history.csv
@@ -8,3 +9,4 @@ output/
 plan.json
 reviewed/
 stats.csv
+keys.json
