@@ -67,12 +67,12 @@ Ricemaker operates on a **MapReduce** strategy to handle large volumes of data w
 ## 7. Outstanding Tasks (from Work Logs)
 - [ ] **Multimedia Integration:** Implement Whisper-based transcription for Audio/Video files.
 - [ ] **Cost Calculation:** Enhance the stats engine to track USD costs for cloud LLM providers accurately.
-- [ ] **Settings UI:** Implement a Settings page to modify `config.json` contents directly from the browser (triggering backend restarts).
-- [ ] **Prompt Template:** Allow for the agent prompt to be configurable based on a template file specified in `config.json`. Restart review after changes are saved.
-- [ ] **File Archives Re-review:** Allow for completed files in the file archives to be reviewed again.
-- [ ] **Agent Controls:** Add a dashboard button with four states: start, pause, continue, and stop.
-- [ ] **Dashboard File Management:** Add a dashboard button to move completed files based on the category tag in the YAML frontmatter.
-- [ ] **Agent Categorization:** Agent must add a category tag to the YAML during analysis.
+- [X] **Settings UI:** Implement a Settings page to modify `config.json` contents directly from the browser (triggering backend restarts).
+- [X] **Prompt Template:** Allow for the agent prompt to be configurable based on a template file specified in `config.json`. Restart review after changes are saved.
+- [X] **File Archives Re-review:** Allow for completed files in the file archives to be reviewed again.
+- [X] **Agent Controls:** Add a dashboard button with four states: start, pause, continue, and stop.
+- [X] **Dashboard File Management:** Add a dashboard button to move completed files to archive folder based on the category tag in the YAML frontmatter.
+- [X] **Agent Categorization:** Agent must add a category tag to the YAML during analysis.
 - [ ] **Agent Traceability:** Agent must add the new file location in the YAML after moving the original file.
 - [ ] **Search & Filter:** Add search functionality to the File Archive panels.
-- [ ] **Prioritized Review:** Prioritize the review of files that are newest (based on date modified).
+- [X] **Prioritized Review:** Prioritize the review of files that are newest (based on date modified).

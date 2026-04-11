@@ -315,7 +315,7 @@
                 <li><a href="#" id="nav-archive" onclick="showView('archive')"><i data-lucide="archive"></i> File Archive</a></li>
                 <li><a href="#" id="nav-stats" onclick="showView('stats')"><i data-lucide="bar-chart-2"></i> Stats & Tokens</a></li>
                 <li><a href="#" onclick="resetToMaster()"><i data-lucide="file-text"></i> Master Summary</a></li>
-                <li><a href="#"><i data-lucide="settings"></i> Settings</a></li>
+                <li><a href="#" id="nav-settings" onclick="showView('settings')"><i data-lucide="settings"></i> Settings</a></li>
             </ul>
         </nav>
         <div class="sidebar-footer">
@@ -510,9 +510,37 @@
                 </div>
             </section>
         </div>
+
+        <!-- Settings View -->
+        <div id="view-settings" style="display: none; flex-direction: column; gap: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="font-size: 1.5rem; font-weight: 700;">System Settings</h2>
+                <button class="btn btn-primary" onclick="window.saveSettings()">Save Settings</button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <section style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div class="section-header" style="border-bottom: none; padding: 0 0 1rem 0;">
+                        <h2>Configuration (config.json)</h2>
+                    </div>
+                    <div id="config-fields" style="display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; max-height: 60vh;">
+                        <!-- Config inputs will be injected here -->
+                    </div>
+                </section>
+
+                <section style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div class="section-header" style="border-bottom: none; padding: 0 0 1rem 0;">
+                        <h2>Prompt Templates (prompts.json)</h2>
+                    </div>
+                    <div id="prompt-fields" style="display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; max-height: 60vh;">
+                        <!-- Prompt textareas will be injected here -->
+                    </div>
+                </section>
+            </div>
+        </div>
     </main>
 
-    <script src="{{ url_for('static', filename='js/main.js', v=10) }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js', v=11) }}"></script>
     <script>
         // Initialize Lucide icons
         lucide.createIcons();

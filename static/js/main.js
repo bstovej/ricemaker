@@ -10,6 +10,7 @@ function showView(view) {
     document.getElementById('view-dashboard').style.display = view === 'dashboard' ? 'block' : 'none';
     document.getElementById('view-archive').style.display = view === 'archive' ? 'flex' : 'none';
     document.getElementById('view-stats').style.display = view === 'stats' ? 'flex' : 'none';
+    document.getElementById('view-settings').style.display = view === 'settings' ? 'flex' : 'none';
     
     // Update nav active state
     document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
@@ -25,14 +26,145 @@ function showView(view) {
     } else if (view === 'archive') {
         title.innerText = "File Archive";
         subtitle.innerText = "History of all reviewed and failed documents.";
-    } else {
+    } else if (view === 'stats') {
         title.innerText = "Stats & Tokens";
         subtitle.innerText = "Detailed performance and consumption analytics.";
         refreshStats();
+    } else if (view === 'settings') {
+        title.innerText = "System Settings";
+        subtitle.innerText = "Modify config.json and prompt templates.";
+        loadSettings();
     }
     
-    refreshDashboard();
+    if (view !== 'settings') refreshDashboard();
 }
+
+async function loadSettings() {
+    try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        
+        const configContainer = document.getElementById('config-fields');
+        const promptContainer = document.getElementById('prompt-fields');
+        
+        if (!configContainer || !promptContainer) return;
+        
+        configContainer.innerHTML = '';
+        promptContainer.innerHTML = '';
+        
+        // Render Config
+        Object.entries(data.config).forEach(([key, value]) => {
+            const div = document.createElement('div');
+            div.style.display = 'flex';
+            div.style.flexDirection = 'column';
+            div.style.gap = '0.4rem';
+            
+            const label = document.createElement('label');
+            label.innerText = key;
+            label.style.fontSize = '0.75rem';
+            label.style.color = 'var(--text-secondary)';
+            label.style.fontWeight = '600';
+            
+            let input;
+            if (typeof value === 'boolean') {
+                input = document.createElement('select');
+                input.innerHTML = `<option value="true" ${value ? 'selected' : ''}>True</option><option value="false" ${!value ? 'selected' : ''}>False</option>`;
+            } else if (typeof value === 'number') {
+                input = document.createElement('input');
+                input.type = 'number';
+                input.value = value;
+                input.step = '0.1';
+            } else {
+                input = document.createElement('input');
+                input.type = 'text';
+                input.value = value;
+            }
+            
+            input.id = `config-${key}`;
+            input.className = 'btn btn-outline';
+            input.style.textAlign = 'left';
+            input.style.cursor = 'text';
+            input.style.width = '100%';
+            
+            div.appendChild(label);
+            div.appendChild(input);
+            configContainer.appendChild(div);
+        });
+        
+        // Render Prompts
+        Object.entries(data.prompts).forEach(([key, value]) => {
+            const div = document.createElement('div');
+            div.style.display = 'flex';
+            div.style.flexDirection = 'column';
+            div.style.gap = '0.4rem';
+            
+            const label = document.createElement('label');
+            label.innerText = key;
+            label.style.fontSize = '0.75rem';
+            label.style.color = 'var(--text-secondary)';
+            label.style.fontWeight = '600';
+            
+            const input = document.createElement('textarea');
+            input.value = value;
+            input.id = `prompt-${key}`;
+            input.className = 'btn btn-outline';
+            input.style.textAlign = 'left';
+            input.style.cursor = 'text';
+            input.style.width = '100%';
+            input.style.minHeight = '100px';
+            input.style.fontFamily = 'inherit';
+            input.style.resize = 'vertical';
+            input.style.padding = '0.75rem';
+            
+            div.appendChild(label);
+            div.appendChild(input);
+            promptContainer.appendChild(div);
+        });
+        
+    } catch (err) {
+        console.error("Load Settings Error:", err);
+    }
+}
+
+window.saveSettings = async function() {
+    const configContainer = document.getElementById('config-fields');
+    const promptContainer = document.getElementById('prompt-fields');
+    
+    if (!configContainer || !promptContainer) return;
+    
+    const config = {};
+    configContainer.querySelectorAll('input, select').forEach(input => {
+        const key = input.id.replace('config-', '');
+        let value = input.value;
+        if (input.type === 'number') value = parseFloat(value);
+        if (input.tagName === 'SELECT') value = value === 'true';
+        config[key] = value;
+    });
+    
+    const prompts = {};
+    promptContainer.querySelectorAll('textarea').forEach(input => {
+        const key = input.id.replace('prompt-', '');
+        prompts[key] = input.value;
+    });
+    
+    try {
+        const res = await fetch('/api/settings', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ config, prompts })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert('Settings saved and agent restarted.');
+            showView('dashboard');
+        } else {
+            alert('Error saving settings: ' + data.error);
+        }
+    } catch (err) {
+        console.error("Save Settings Error:", err);
+        alert('Failed to save settings.');
+    }
+};
 
 function resetToMaster() {
     selectedFile = null;

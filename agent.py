@@ -15,6 +15,7 @@ class RicemakerAgent:
     def __init__(self):
         self.config = self.load_json('config.json')
         self.keys = self.load_json('keys.json')
+        self.prompts = self.load_json(self.config.get('prompts_file', 'prompts.json'))
         
         self.file_queue = queue.PriorityQueue()
 
@@ -233,7 +234,7 @@ class RicemakerAgent:
                 pre_p = self.session_tokens["prompt"]
                 pre_c = self.session_tokens["completion"]
                 
-                result = self._call_llm("Review this document segment. Provide key insights and facts.", chunk)
+                result = self._call_llm(self.prompts.get("segment_review", "Review this document segment. Provide key insights and facts."), chunk)
                 
                 chunk_reviews.append(result)
                 file_prompt_tokens += (self.session_tokens["prompt"] - pre_p)
@@ -275,7 +276,7 @@ class RicemakerAgent:
                     self.update_state(file_path.name, progress)
                     
                     batch_summary = self._call_llm(
-                        "You are a subject matter expert. Consolidate these segment reviews into a single, cohesive executive summary with clear headings.",
+                        self.prompts.get("consolidation", "You are a subject matter expert. Consolidate these segment reviews into a single, cohesive executive summary with clear headings."),
                         f"Segment Reviews:\n{batch_text}"
                     )
                     
@@ -292,7 +293,7 @@ class RicemakerAgent:
             # 3.5 Generate Content-Aware Tags
             logging.info(f"Generating categorization tags for {file_path.name}...")
             tag_resp = self._call_llm(
-                "You are a metadata specialist. Based on the summary provided, generate 3-5 highly relevant Obsidian tags in 'domain/subject' format (e.g. 'science/physics', 'tech/ai'). Return ONLY a comma-separated list of tags without '#' symbols.",
+                self.prompts.get("categorization", "You are a metadata specialist. Based on the summary provided, generate 3-5 highly relevant Obsidian tags in 'domain/subject' format (e.g. 'science/physics', 'tech/ai'). Return ONLY a comma-separated list of tags without '#' symbols."),
                 f"Document Summary:\n{final_result[:5000]}"
             )
             # Basic cleanup of LLM response
@@ -302,7 +303,7 @@ class RicemakerAgent:
             # 3.6 Generate MOC Blurb (Concise summary for Master Report)
             logging.info(f"Generating MOC blurb for {file_path.name}...")
             moc_blurb = self._call_llm(
-                "You are a librarian creating a Map of Content (MOC). Summarize the key essence of this document in 150 words or less. Focus on its core value and main findings. Return ONLY the summary text.",
+                self.prompts.get("moc_blurb", "You are a librarian creating a Map of Content (MOC). Summarize the key essence of this document in 150 words or less. Focus on its core value and main findings. Return ONLY the summary text."),
                 f"Full Review:\n{final_result[:8000]}"
             )
 

@@ -49,6 +49,37 @@ def agent_state():
         
     return jsonify({'state': current_state})
 
+@app.route('/api/settings', methods=['GET', 'POST'])
+def settings():
+    config_file = Path('config.json')
+    if request.method == 'POST':
+        data = request.json
+        new_config = data.get('config')
+        new_prompts = data.get('prompts')
+        
+        if new_config:
+            config_file.write_text(json.dumps(new_config, indent=2))
+        
+        if new_prompts:
+            prompts_file_name = new_config.get('prompts_file', 'prompts.json') if new_config else 'prompts.json'
+            prompts_file = Path(prompts_file_name)
+            prompts_file.write_text(json.dumps(new_prompts, indent=2))
+        
+        # Trigger agent restart
+        stop_agent()
+        start_agent()
+        
+        return jsonify({"success": True})
+        
+    config = get_data('config.json')
+    prompts_file = config.get('prompts_file', 'prompts.json')
+    prompts = get_data(prompts_file)
+    
+    return jsonify({
+        "config": config,
+        "prompts": prompts
+    })
+
 @app.route('/api/status')
 def status():
     """Returns the current processing plan for the dashboard"""
