@@ -387,7 +387,12 @@
 
                 <section>
                     <div class="section-header">
-                        <h2>Master Summary</h2>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <h2>Master Summary</h2>
+                            <select id="master-report-select" onchange="window.loadSpecificMasterReport(this.value)" class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; max-width: 200px;">
+                                <option value="">Latest</option>
+                            </select>
+                        </div>
                         <i data-lucide="file-text" style="width: 16px; height: 16px; color: var(--text-secondary);"></i>
                     </div>
                     <div id="summary-content">
@@ -540,7 +545,7 @@
         </div>
     </main>
 
-    <script src="{{ url_for('static', filename='js/main.js', v=12) }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js', v=13) }}"></script>
     <script>
         // Initialize Lucide icons
         lucide.createIcons();

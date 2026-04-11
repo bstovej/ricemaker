@@ -297,6 +297,27 @@ async function refreshStats() {
     }
 }
 
+let lastMasterReportFilename = null;
+let currentMasterReportSelection = ""; // empty means "Latest"
+
+window.loadSpecificMasterReport = async function(filename) {
+    currentMasterReportSelection = filename;
+    const url = filename ? `/api/summary/${encodeURIComponent(filename)}` : '/api/summary';
+    
+    try {
+        const res = await fetch(url);
+        const summary = await res.json();
+        const summaryContent = document.getElementById('summary-content');
+        
+        if (summaryContent && summary.content) {
+            lastMasterReportFilename = summary.filename;
+            renderMarkdownWithYaml(summaryContent, summary.content);
+        }
+    } catch (err) {
+        console.error("Load Specific Master Error:", err);
+    }
+};
+
 async function refreshDashboard() {
     try {
         const lastUpdatedEl = document.getElementById('last-updated');
@@ -483,14 +504,29 @@ async function refreshDashboard() {
         }
 
         if (!selectedFile && currentView === 'dashboard') {
-            const summaryRes = await fetch('/api/summary');
+            const summaryUrl = currentMasterReportSelection ? `/api/summary/${encodeURIComponent(currentMasterReportSelection)}` : '/api/summary';
+            const summaryRes = await fetch(summaryUrl);
             const summary = await summaryRes.json();
             const summaryContent = document.getElementById('summary-content');
-            const summaryTitle = document.querySelector('section:last-child .section-header h2');
             
-            if (summaryContent && summaryTitle) {
-                summaryTitle.innerText = summary.filename ? `Master: ${summary.filename}` : "Global Master Summary";
-                if (summary.content && summary.content !== "No master report generated yet.") {
+            // Populate dropdown if needed
+            const selectEl = document.getElementById('master-report-select');
+            if (selectEl && summary.reports) {
+                // Keep "Latest" and update others
+                const currentValue = selectEl.value;
+                selectEl.innerHTML = '<option value="">Latest</option>';
+                summary.reports.forEach(r => {
+                    const option = document.createElement('option');
+                    option.value = r.name;
+                    option.innerText = r.name;
+                    selectEl.appendChild(option);
+                });
+                selectEl.value = currentValue;
+            }
+
+            if (summaryContent && summary.content && summary.filename !== lastMasterReportFilename) {
+                lastMasterReportFilename = summary.filename;
+                if (summary.content !== "No master report generated yet.") {
                     renderMarkdownWithYaml(summaryContent, summary.content);
                 }
             }

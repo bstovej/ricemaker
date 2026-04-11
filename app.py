@@ -152,26 +152,46 @@ def get_report(filename):
     return jsonify({"error": f"Report not found at {report_path}"}), 404
 
 @app.route('/api/summary')
-def summary():
-    """Reads the most recent consolidated master report from the configured output folder"""
+@app.route('/api/summary/<path:filename>')
+def summary(filename=None):
+    """Reads master reports from the configured output folder"""
     config = get_data('config.json')
     output_dir = Path(config.get('output_folder', './output'))
     
-    # Find all master reports and sort by modification time (newest first)
+    # Find all master reports
     master_files = list(output_dir.glob('master_report_*.md'))
-    if not master_files:
-        # Fallback to the old name if exists
-        report_path = output_dir / 'master_report.md'
-        if report_path.exists():
-            return jsonify({"content": report_path.read_text(encoding='utf-8')})
-        return jsonify({"content": "No master report generated yet."})
     
-    # Sort by mtime descending
-    latest_master = max(master_files, key=lambda f: f.stat().st_mtime)
+    # Also check for the old master_report.md
+    old_master = output_dir / 'master_report.md'
+    if old_master.exists():
+        master_files.append(old_master)
+    
+    # Sort by modification time (newest first)
+    master_files.sort(key=lambda f: f.stat().st_mtime, reverse=True)
+    
+    report_list = [{"name": f.name, "modified": f.stat().st_mtime} for f in master_files]
+    
+    if not master_files:
+        return jsonify({
+            "content": "No master report generated yet.",
+            "reports": []
+        })
+    
+    # If a specific filename is requested, find it
+    selected_report = None
+    if filename:
+        import urllib.parse
+        decoded_name = urllib.parse.unquote(filename)
+        selected_report = next((f for f in master_files if f.name == decoded_name), None)
+    
+    # Default to the newest report if none specified or not found
+    if not selected_report:
+        selected_report = master_files[0]
     
     return jsonify({
-        "content": latest_master.read_text(encoding='utf-8'),
-        "filename": latest_master.name
+        "content": selected_report.read_text(encoding='utf-8'),
+        "filename": selected_report.name,
+        "reports": report_list
     })
 
 @app.route('/api/check_exists/<path:filename>', methods=['GET'])
