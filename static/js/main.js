@@ -208,7 +208,6 @@ async function viewReport(filename) {
         r.style.backgroundColor = 'transparent';
     });
     
-    // Highlight all instances of this row across different views
     const rows = document.querySelectorAll(`[id="row-${filename}"]`);
     rows.forEach(row => {
         row.style.backgroundColor = 'var(--bg-tertiary)';
@@ -218,41 +217,35 @@ async function viewReport(filename) {
         const res = await fetch(`/api/report/${encodeURIComponent(filename)}`);
         const data = await res.json();
         
-        let targetContainer = document.getElementById('summary-content');
-        let targetTitle = document.querySelector('section:last-child .section-header h2');
-
-        // If we are in Archive view, use the archive-specific preview container
         if (currentView === 'archive') {
-            targetContainer = document.getElementById('archive-summary-content');
-            targetTitle = null; // We don't change the title in archive view
-        } else if (currentView !== 'dashboard') {
-            // If in Stats, maybe switch to Dashboard? Or just stay.
-            // Let's stick to user request: Archive has its own display.
-            // If in Dashboard, use Dashboard display.
-            showView('dashboard');
-            targetContainer = document.getElementById('summary-content');
-        }
-
-        if (targetTitle && currentView === 'dashboard') {
-            targetTitle.innerText = `Report: ${filename}`;
-        }
-        
-        const btnArchive = document.getElementById('btn-archive-current');
-        const btnReReview = document.getElementById('btn-rereview');
-        if (btnArchive) btnArchive.style.display = 'inline-flex';
-        if (btnReReview) btnReReview.style.display = 'inline-flex';
-
-        if (data.content) {
-            renderMarkdownWithYaml(targetContainer, data.content);
+            const container = document.getElementById('archive-summary-content');
+            if (container && data.content) renderMarkdownWithYaml(container, data.content);
+            const btnArchive = document.getElementById('btn-archive-current');
+            const btnReReview = document.getElementById('btn-rereview');
+            if (btnArchive) btnArchive.style.display = 'inline-flex';
+            if (btnReReview) btnReReview.style.display = 'inline-flex';
         } else {
-            targetContainer.innerHTML = `<p style="color: var(--status-error); font-weight: 500;">Summary text not found.</p>`;
+            // Use Modal for Dashboard file previews
+            const modal = document.getElementById('report-modal');
+            const modalContent = document.getElementById('modal-content');
+            const modalTitle = document.getElementById('modal-title');
+            
+            if (modal && modalContent) {
+                modalTitle.innerText = `File Report: ${filename}`;
+                renderMarkdownWithYaml(modalContent, data.content || "# No Content\nReport text not found.");
+                modal.style.display = 'flex';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
         }
     } catch (err) {
         console.error("Fetch Report Error:", err);
-        const container = currentView === 'archive' ? document.getElementById('archive-summary-content') : document.getElementById('summary-content');
-        if (container) container.innerHTML = `<p style="color: var(--status-error); font-weight: 500;">Summary text not found.</p>`;
     }
 }
+
+window.closeModal = function() {
+    const modal = document.getElementById('report-modal');
+    if (modal) modal.style.display = 'none';
+};
 
 async function refreshStats() {
     try {
@@ -503,27 +496,50 @@ async function refreshDashboard() {
             document.getElementById('stat-session-tokens').innerText = tokenStr;
         }
 
-        if (!selectedFile && currentView === 'dashboard') {
+        // Master Summary Panel Refresh
+        if (currentView === 'dashboard') {
             const summaryUrl = currentMasterReportSelection ? `/api/summary/${encodeURIComponent(currentMasterReportSelection)}` : '/api/summary';
             const summaryRes = await fetch(summaryUrl);
             const summary = await summaryRes.json();
             const summaryContent = document.getElementById('summary-content');
-            
-            // Populate dropdown if needed
+            const reportsListBody = document.getElementById('master-reports-list');
             const selectEl = document.getElementById('master-report-select');
-            if (selectEl && summary.reports) {
-                // Keep "Latest" and update others
-                const currentValue = selectEl.value;
-                selectEl.innerHTML = '<option value="">Latest</option>';
-                summary.reports.forEach(r => {
-                    const option = document.createElement('option');
-                    option.value = r.name;
-                    option.innerText = r.name;
-                    selectEl.appendChild(option);
-                });
-                selectEl.value = currentValue;
+
+            // 1. Update Dropdown and Table List
+            if (summary.reports) {
+                if (selectEl) {
+                    const currentValue = selectEl.value;
+                    selectEl.innerHTML = '<option value="">Latest</option>';
+                    summary.reports.forEach(r => {
+                        const option = document.createElement('option');
+                        option.value = r.name;
+                        option.innerText = r.name;
+                        selectEl.appendChild(option);
+                    });
+                    selectEl.value = currentValue;
+                }
+
+                if (reportsListBody) {
+                    reportsListBody.innerHTML = "";
+                    summary.reports.forEach(r => {
+                        const dateStr = new Date(r.modified * 1000).toLocaleString();
+                        const isSelected = (currentMasterReportSelection === r.name) || (!currentMasterReportSelection && r.name === summary.filename);
+                        
+                        reportsListBody.innerHTML += `
+                            <tr onclick="window.loadSpecificMasterReport('${r.name}')" style="cursor: pointer; background-color: ${isSelected ? 'rgba(59, 130, 246, 0.1)' : 'transparent'};">
+                                <td style="padding: 0.4rem 1rem; color: ${isSelected ? 'var(--accent-primary)' : 'var(--text-primary)'};">
+                                    <i data-lucide="file-text" style="width: 12px; height: 12px; vertical-align: middle; margin-right: 0.5rem;"></i>
+                                    ${r.name}
+                                </td>
+                                <td style="padding: 0.4rem 1rem; text-align: right; color: var(--text-secondary); font-size: 0.7rem;">${dateStr}</td>
+                            </tr>
+                        `;
+                    });
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
             }
 
+            // 2. Update Display Content
             if (summaryContent && summary.content && summary.filename !== lastMasterReportFilename) {
                 lastMasterReportFilename = summary.filename;
                 if (summary.content !== "No master report generated yet.") {
