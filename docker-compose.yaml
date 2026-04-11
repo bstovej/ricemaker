@@ -17,6 +17,7 @@ services:
       - ./history.csv:/app/history.csv
       - ./keys.json:/app/keys.json
       - ./config.json:/app/config.json
+      - ./prompts.json:/app/prompts.json
     extra_hosts:
       - "host.docker.internal:host-gateway" # Vital for connecting to host Ollama
     environment:
