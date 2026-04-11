@@ -145,8 +145,11 @@ window.saveSettings = async function() {
     promptContainer.querySelectorAll('textarea').forEach(input => {
         const key = input.id.replace('prompt-', '');
         prompts[key] = input.value;
+        console.log(`Collecting prompt [${key}]: ${input.value.substring(0, 30)}...`);
     });
     
+    console.log("Saving full payload:", { config, prompts });
+
     try {
         const res = await fetch('/api/settings', {
             method: 'POST',
