@@ -314,7 +314,6 @@
                 <li><a href="#" class="active" id="nav-dashboard" onclick="showView('dashboard')"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
                 <li><a href="#" id="nav-archive" onclick="showView('archive')"><i data-lucide="archive"></i> File Archive</a></li>
                 <li><a href="#" id="nav-stats" onclick="showView('stats')"><i data-lucide="bar-chart-2"></i> Stats & Tokens</a></li>
-                <li><a href="#" onclick="resetToMaster()"><i data-lucide="file-text"></i> Master Summary</a></li>
                 <li><a href="#" id="nav-settings" onclick="showView('settings')"><i data-lucide="settings"></i> Settings</a></li>
             </ul>
         </nav>
@@ -571,7 +570,7 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/main.js', v=14) }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js', v=15) }}"></script>
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
