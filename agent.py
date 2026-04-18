@@ -21,6 +21,7 @@ class RicemakerAgent:
 
         # Session Stats
         self.session_start = time.time()
+        self.session_id_str = time.strftime("%Y%m%d_%H%M", time.localtime(self.session_start))
         self.session_processed = 0
         self.session_tokens = {"prompt": 0, "completion": 0}
         self.active_model = self.config.get('model_name', 'ollama/gemma4:26b')
@@ -370,7 +371,6 @@ class RicemakerAgent:
         """Consolidates session reports into an MOC-style summary with metadata and concise blurbs"""
         from datetime import datetime
         now_dt = datetime.now()
-        now_str = now_dt.strftime("%Y%m%d_%H%M")
         output_dir = Path(self.config['output_folder'])
         
         plan = self.load_json('plan.json')
@@ -397,7 +397,7 @@ class RicemakerAgent:
             reports.append(entry)
         
         if reports:
-            master_filename = f"master_report_{now_str}.md"
+            master_filename = f"master_report_{self.session_id_str}.md"
             title = f"Ricemaker Session MOC - {now_dt.strftime('%Y-%m-%d %H:%M')}"
             
             frontmatter = self._generate_master_frontmatter(title, len(reports))
