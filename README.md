@@ -13,25 +13,81 @@ Ricemaker is a high-reliability "MapReduce" agent that transforms raw local file
 
 ---
 
-## 🛠️ Installation & Setup
+## 🏁 Getting Started
 
-### 1. Prerequisite: Ollama
-For local inference, install **Ollama** on your **Host OS**.
-- **Download:** [ollama.com](https://ollama.com)
-- **Settings:** Ensure `OLLAMA_HOST=0.0.0.0` is set in your environment if using custom network setups (default usually works).
+### 1. Clone the Repository
+Open your terminal (macOS/Linux) or PowerShell/Command Prompt (Windows) and run the following commands to clone the repository to your local machine:
 
-### 2. Prepare Configuration
-1. Clone this repository.
-2. Edit `keys.json`: Add your `OLLAMA_API_BASE` (e.g., `http://host.docker.internal:11434`) and any Cloud API keys.
-3. Edit `config.json`:
-   - `input_folder`: Absolute path to your source files (e.g., `/Volumes/NAS/Papers`).
-   - `output_folder`: Absolute path to your Obsidian vault or result folder.
-
-### 3. Deploy with Docker
-Ricemaker is fully containerized. To start:
+**macOS / Linux:**
 ```bash
-docker-compose up --build -d
+git clone https://github.com/your-username/ricemaker.git
+cd ricemaker
 ```
+
+**Windows:**
+```powershell
+git clone https://github.com/your-username/ricemaker.git
+cd ricemaker
+```
+
+### 2. Configuration
+The system relies on JSON configuration files that are ignored by Git for security and local flexibility. You must create them in the project root:
+
+#### `keys.json`
+Used for API keys and endpoint configuration.
+```json
+{
+  "OLLAMA_API_BASE": "http://host.docker.internal:11434",
+  "OPENAI_API_KEY": "sk-...",
+  "ANTHROPIC_API_KEY": "sk-...",
+  "GOOGLE_API_KEY": "..."
+}
+```
+
+#### `config.json`
+Define your local folder paths (absolute paths recommended) and default model.
+```json
+{
+  "input_folder": "/Users/your-user/Documents/input",
+  "output_folder": "/Users/your-user/Documents/output",
+  "model_id": "ollama/llama3",
+  "max_budget_usd": 50.0
+}
+```
+
+> **⚠️ Note on Windows Paths:** In `config.json`, use forward slashes (e.g., `C:/Users/name/input`) or escaped backslashes (`C:\\Users\\name\\input`).
+
+### 3. Docker Deployment
+Ricemaker is designed to run in Docker while bridging to your host machine's Ollama instance.
+
+#### Build the System
+If this is your first time or you've made changes to the code:
+```bash
+docker-compose build
+```
+
+#### Run the System
+Start the agent and the dashboard in the background:
+```bash
+docker-compose up -d
+```
+
+#### Monitor Logs
+To see the agent's real-time analysis logs:
+```bash
+docker-compose logs -f ai-agent
+```
+
+#### Stop the System
+```bash
+docker-compose down
+```
+
+### 4. Hardware Acceleration (Local LLMs)
+To use your local GPU for Ollama, ensure **Ollama** is running on your **Host OS** (not inside Docker). The `docker-compose.yaml` file uses `host.docker.internal` to bridge the container's requests back to your machine's hardware.
+
+---
+
 Access the dashboard at: `http://localhost:1688`
 
 ---
