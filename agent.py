@@ -30,9 +30,6 @@ class RicemakerAgent:
         # Point to llama.cpp from inside Docker
         self.llama_cpp_base = self.keys.get("LLAMA_CPP_API_BASE", "http://host.docker.internal:8080/v1")
         
-        # litellm configuration
-        os.environ["OPENAI_API_BASE"] = self.llama_cpp_base
-        
     def load_json(self, path):
         return json.loads(Path(path).read_text()) if Path(path).exists() else {}
 

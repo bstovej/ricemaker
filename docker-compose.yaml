@@ -22,5 +22,7 @@ services:
       - "host.docker.internal:host-gateway" # Vital for connecting to host llama.cpp server
     environment:
       - PYTHONUNBUFFERED=1
+      - OPENAI_API_KEY=sk-local-llama-cpp
+      - OPENAI_API_BASE=http://host.docker.internal:8080/v1
     restart: unless-stopped
 

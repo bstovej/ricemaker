@@ -80,42 +80,59 @@ def settings():
         "prompts": prompts
     })
 
+_cache = {}
+
+def get_cached_data(key, getter, ttl=5):
+    now = time.time()
+    if key in _cache and (now - _cache[key]['time']) < ttl:
+        return _cache[key]['data']
+    data = getter()
+    _cache[key] = {'data': data, 'time': now}
+    return data
+
 @app.route('/api/status')
 def status():
     """Returns the current processing plan for the dashboard"""
-    return jsonify(get_data('plan.json'))
+    return jsonify(get_cached_data('plan.json', lambda: get_data('plan.json'), ttl=3))
 
 @app.route('/api/session')
 def session_stats():
     """Returns current session progress and token counts"""
-    return jsonify(get_data('session_stats.json'))
+    return jsonify(get_cached_data('session_stats.json', lambda: get_data('session_stats.json'), ttl=3))
 
 @app.route('/api/files')
 def list_files():
     """Scans the input folder from config.json and returns all files"""
-    config = get_data('config.json')
-    input_folder = Path(config.get('input_folder', './input'))
+    def _get_files():
+        config = get_data('config.json')
+        input_folder = Path(config.get('input_folder', './input'))
+        files = []
+        if input_folder.exists():
+            for f in input_folder.iterdir():
+                if f.is_file() and not f.name.startswith('.'):
+                    try:
+                        stats = f.stat()
+                        files.append({
+                            "name": f.name,
+                            "size": stats.st_size,
+                            "modified": stats.st_mtime
+                        })
+                    except: continue
+        return files
     
-    files = []
-    if input_folder.exists():
-        for f in input_folder.iterdir():
-            if f.is_file() and not f.name.startswith('.'):
-                stats = f.stat()
-                files.append({
-                    "name": f.name,
-                    "size": stats.st_size,
-                    "modified": stats.st_mtime
-                })
-    return jsonify(files)
+    return jsonify(get_cached_data('input_files', _get_files, ttl=10))
 
 @app.route('/api/stats')
 def stats():
     """Returns cost and latency data from stats.csv"""
-    import pandas as pd
-    if Path('stats.csv').exists():
-        df = pd.read_csv('stats.csv')
-        return jsonify(df.to_dict(orient='records'))
-    return jsonify([])
+    def _get_stats():
+        import pandas as pd
+        if Path('stats.csv').exists():
+            df = pd.read_csv('stats.csv')
+            return df.to_dict(orient='records')
+        return []
+    
+    return jsonify(get_cached_data('stats_csv', _get_stats, ttl=15))
 
 @app.route('/api/report/<path:filename>')
 def get_report(filename):

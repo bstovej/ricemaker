@@ -360,13 +360,9 @@ async function refreshDashboard() {
         const filesRes = await fetch(`/api/files?t=${ts}`);
         const folderFiles = await filesRes.json();
         
-        const queueBody = document.getElementById('status-table-body');
-        const completedBody = document.getElementById('archive-completed-body');
-        const errorBody = document.getElementById('archive-error-body');
-        
-        if (queueBody) queueBody.innerHTML = ''; 
-        if (completedBody) completedBody.innerHTML = '';
-        if (errorBody) errorBody.innerHTML = '';
+        let queueHtml = '';
+        let completedHtml = '';
+        let errorHtml = '';
         
         let completedCount = 0;
         let errorCount = 0;
@@ -408,7 +404,6 @@ async function refreshDashboard() {
             const isArchived = f.status === 'archived';
             const isCompleted = f.status === 'completed';
             
-            // A file is a "Ghost" if it's supposed to be processed (pending/processing) but is missing from the folder.
             const isGhost = !f.exists && isProcessing;
 
             let displayStatus = f.status;
@@ -419,55 +414,48 @@ async function refreshDashboard() {
                 badgeClass = 'error';
             }
 
-            // Dashboard logic:
-            // - Show it if it's currently processing/pending (even if missing/ghost)
-            // - Show it if it was completed in the CURRENT session AND it's still in the input folder
             const showInDashboard = !isError && !isArchived && (isProcessing || (isCompleted && isCurrentSession && f.exists));
 
             if (showInDashboard) {
-                // Show in Live Queue (Dashboard)
                 pendingCount++;
                 if (isGhost) missingCount++;
                 
-                if (queueBody) {
-                    let statusHtml = `<span class="status-badge ${badgeClass}">${displayStatus}</span>`;
-                    if (f.status === 'completed' && f.exists) statusHtml = `<span class="status-badge completed">Completed</span>`;
-                    
-                    const removeBtn = isGhost ? `<button onclick="event.stopPropagation(); window.removeFile('${f.name}')" class="btn btn-outline" style="padding: 0.1rem 0.4rem; font-size: 0.65rem; margin-left: 0.5rem;"><i data-lucide="trash-2" style="width: 10px; height: 10px;"></i></button>` : '';
+                let statusHtml = `<span class="status-badge ${badgeClass}">${displayStatus}</span>`;
+                if (f.status === 'completed' && f.exists) statusHtml = `<span class="status-badge completed">Completed</span>`;
+                
+                const removeBtn = isGhost ? `<button onclick="event.stopPropagation(); window.removeFile('${f.name}')" class="btn btn-outline" style="padding: 0.1rem 0.4rem; font-size: 0.65rem; margin-left: 0.5rem;"><i data-lucide="trash-2" style="width: 10px; height: 10px;"></i></button>` : '';
 
-                    queueBody.innerHTML += `
-                        <tr onclick="viewReport('${f.name}')" style="cursor: pointer; background-color: ${isSelected ? 'var(--bg-tertiary)' : 'transparent'};" class="file-row" id="row-${f.name}">
-                            <td style="width: 25%;">${statusHtml}${removeBtn}</td>
-                            <td style="font-family: 'JetBrains Mono', monospace; width: 55%;">${f.name}</td>
-                            <td style="color: var(--text-secondary); width: 20%;">${dateStr}</td>
-                        </tr>`;
-                }
+                queueHtml += `
+                    <tr onclick="viewReport('${f.name}')" style="cursor: pointer; background-color: ${isSelected ? 'var(--bg-tertiary)' : 'transparent'};" class="file-row" id="row-${f.name}">
+                        <td style="width: 25%;">${statusHtml}${removeBtn}</td>
+                        <td style="font-family: 'JetBrains Mono', monospace; width: 55%;">${f.name}</td>
+                        <td style="color: var(--text-secondary); width: 20%;">${dateStr}</td>
+                    </tr>`;
             } else {
-                // Show in Archive
                 if (f.status === 'completed' || f.status === 'archived') {
                     completedCount++;
-                    if (completedBody) {
-                        let statusBadge = f.status === 'archived' ? '<span class="status-badge" style="margin-right: 0.5rem; background-color: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border-color); padding: 0.1rem 0.3rem;">Archived</span>' : '';
-                        completedBody.innerHTML += `
-                            <tr onclick="viewReport('${f.name}')" style="cursor: pointer; background-color: ${isSelected ? 'var(--bg-tertiary)' : 'transparent'};" class="file-row" id="row-${f.name}">
-                                <td style="font-family: 'JetBrains Mono', monospace; width: 50%;">${statusBadge}${f.name}</td>
-                                <td style="color: var(--text-secondary); font-size: 0.75rem; width: 25%;">${modelName}</td>
-                                <td style="color: var(--text-secondary); width: 25%;">${dateStr}</td>
-                            </tr>`;
-                    }
+                    let statusBadge = f.status === 'archived' ? '<span class="status-badge" style="margin-right: 0.5rem; background-color: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border-color); padding: 0.1rem 0.3rem;">Archived</span>' : '';
+                    completedHtml += `
+                        <tr onclick="viewReport('${f.name}')" style="cursor: pointer; background-color: ${isSelected ? 'var(--bg-tertiary)' : 'transparent'};" class="file-row" id="row-${f.name}">
+                            <td style="font-family: 'JetBrains Mono', monospace; width: 50%;">${statusBadge}${f.name}</td>
+                            <td style="color: var(--text-secondary); font-size: 0.75rem; width: 25%;">${modelName}</td>
+                            <td style="color: var(--text-secondary); width: 25%;">${dateStr}</td>
+                        </tr>`;
                 } else if (f.status.startsWith('error')) {
                     errorCount++;
-                    if (errorBody) {
-                        errorBody.innerHTML += `
-                            <tr onclick="viewReport('${f.name}')" style="cursor: pointer; background-color: ${isSelected ? 'var(--bg-tertiary)' : 'transparent'};" class="file-row" id="row-${f.name}">
-                                <td style="font-family: 'JetBrains Mono', monospace; width: 50%;">${f.name}</td>
-                                <td style="color: var(--text-secondary); font-size: 0.75rem; width: 25%;">${modelName}</td>
-                                <td style="color: var(--text-secondary); width: 25%;">${dateStr}</td>
-                            </tr>`;
-                    }
+                    errorHtml += `
+                        <tr onclick="viewReport('${f.name}')" style="cursor: pointer; background-color: ${isSelected ? 'var(--bg-tertiary)' : 'transparent'};" class="file-row" id="row-${f.name}">
+                            <td style="font-family: 'JetBrains Mono', monospace; width: 50%;">${f.name}</td>
+                            <td style="color: var(--text-secondary); font-size: 0.75rem; width: 25%;">${modelName}</td>
+                            <td style="color: var(--text-secondary); width: 25%;">${dateStr}</td>
+                        </tr>`;
                 }
             }
         });
+
+        if (queueBody) queueBody.innerHTML = queueHtml; 
+        if (completedBody) completedBody.innerHTML = completedHtml;
+        if (errorBody) errorBody.innerHTML = errorHtml;
 
         // The "Queue Size" header should show items that are still to be done
         const truePendingCount = mergedList.filter(f => !f.status.startsWith('error') && f.status !== 'archived' && (f.status === 'pending' || f.status.includes('Processing'))).length;
@@ -562,7 +550,7 @@ async function refreshDashboard() {
 
 // Initial load
 refreshDashboard();
-setInterval(refreshDashboard, 5000);
+setInterval(refreshDashboard, 10000);
 
 document.getElementById('sync-icon').addEventListener('click', refreshDashboard);
 
