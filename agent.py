@@ -24,14 +24,14 @@ class RicemakerAgent:
         self.session_id_str = time.strftime("%Y%m%d_%H%M", time.localtime(self.session_start))
         self.session_processed = 0
         self.session_tokens = {"prompt": 0, "completion": 0}
-        self.active_model = self.config.get('model_name', 'ollama/gemma4:26b')
+        self.active_model = self.config.get('model_name', 'openai/local-model')
         self._update_session_file()
         
-        # Point to Host Ollama from inside Docker
-        self.ollama_base = self.keys.get("OLLAMA_API_BASE", "http://host.docker.internal:11434")
+        # Point to llama.cpp from inside Docker
+        self.llama_cpp_base = self.keys.get("LLAMA_CPP_API_BASE", "http://host.docker.internal:8080/v1")
         
-        # litellm configuration for Ollama
-        os.environ["OLLAMA_API_BASE"] = self.ollama_base
+        # litellm configuration
+        os.environ["OPENAI_API_BASE"] = self.llama_cpp_base
         
     def load_json(self, path):
         return json.loads(Path(path).read_text()) if Path(path).exists() else {}
@@ -65,10 +65,7 @@ class RicemakerAgent:
             self.active_model = model_name
             self._update_session_file()
             
-            # LiteLLM uses 'ollama/model' syntax for Ollama
             curr_model = model_name
-            if curr_model.startswith("ollama:"):
-                curr_model = curr_model.replace("ollama:", "ollama/")
                 
             try:
                 logging.info(f"Attempt {attempt+1}: Calling {curr_model}...")
@@ -78,8 +75,7 @@ class RicemakerAgent:
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_content}
                     ],
-                    api_base=self.ollama_base if "ollama" in curr_model else None,
-                    num_ctx=8192 if "ollama" in curr_model else None,
+                    api_base=self.llama_cpp_base if curr_model.startswith("openai/") else None,
                     timeout=300
                 )
                 
@@ -555,25 +551,19 @@ if __name__ == "__main__":
     input_path = agent.config.get('input_folder', './input')
     
     # --- Connection Test ---
-    logging.info(f"Testing connection to Ollama at {agent.ollama_base} (60s timeout)...")
+    logging.info(f"Testing connection to llama.cpp at {agent.llama_cpp_base} (60s timeout)...")
     try:
         import requests
-        resp = requests.get(f"{agent.ollama_base}/api/tags", timeout=60)
+        # Check OpenAI-compatible models endpoint
+        resp = requests.get(f"{agent.llama_cpp_base}/models", timeout=60)
         if resp.status_code == 200:
-            logging.info("Successfully connected to Ollama.")
-            models = [m['name'] for m in resp.json().get('models', [])]
+            logging.info("Successfully connected to llama.cpp server.")
+            models = [m['id'] for m in resp.json().get('data', [])]
             logging.info(f"Available models: {models}")
-            
-            # Support both ollama:model and ollama/model syntax in config
-            target_model = agent.config['model_name'].replace('ollama/', '').replace('ollama:', '')
-            if target_model not in models:
-                # Also check for tag-less match if user omitted :latest
-                if f"{target_model}:latest" not in models and target_model.split(':')[0] not in [m.split(':')[0] for m in models]:
-                    logging.warning(f"Model {agent.config['model_name']} not found in Ollama! Pull it using 'ollama pull {target_model}'")
         else:
-            logging.error(f"Ollama returned status code {resp.status_code}")
+            logging.error(f"llama.cpp server returned status code {resp.status_code}")
     except Exception as e:
-        logging.error(f"Failed to connect to Ollama: {e}")
+        logging.error(f"Failed to connect to llama.cpp: {e}")
     
     # Ensure directories exist
     # Only try to create if it's a relative path; for absolute paths (mounts), just check access

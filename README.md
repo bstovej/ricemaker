@@ -1,14 +1,14 @@
 # 🌾 Ricemaker
 **Durable AI File Reviewer Agent for Mac & Windows (Desktop Edition)**
 
-Ricemaker is a high-reliability "MapReduce" agent that transforms raw local files (PDFs, Office Docs, Audio, Video) into structured AI reviews. Optimized for local inference with **Ollama** and **LiteLLM**, it bridges your local desktop files directly to modern LLMs without sacrificing privacy.
+Ricemaker is a high-reliability "MapReduce" agent that transforms raw local files (PDFs, Office Docs, Audio, Video) into structured AI reviews. Optimized for local inference with **llama.cpp** and **LiteLLM**, it bridges your local desktop files directly to modern LLMs without sacrificing privacy.
 
 ## 🚀 Key Features
 - **Watcher Mode:** Real-time monitoring of any local or NAS folder.
 - **Obsidian Integration:** Generates Markdown reports with rich YAML frontmatter and file lineage (`source` tracing).
 - **Dual-Panel Dashboard:** Separates "Live Queue" (active work) from "File Archive" (thousands of processed items) for efficient batch management.
 - **MapReduce Processing:** Handles massive files by chunking them before consolidation.
-- **Local Privacy:** Optimized to use your Mac/Windows GPU via Ollama to keep data on your machine.
+- **Local Privacy:** Optimized to use your Mac/Windows GPU via llama.cpp to keep data on your machine.
 - **Durable Progress:** Persistent checkpoints (`plan.json` and `history.csv`) ensure zero work is lost on restart.
 
 ---
@@ -37,7 +37,7 @@ The system relies on JSON configuration files that are ignored by Git for securi
 Used for API keys and endpoint configuration.
 ```json
 {
-  "OLLAMA_API_BASE": "http://host.docker.internal:11434",
+  "LLAMA_CPP_API_BASE": "http://host.docker.internal:8080/v1",
   "OPENAI_API_KEY": "sk-...",
   "ANTHROPIC_API_KEY": "sk-...",
   "GOOGLE_API_KEY": "..."
@@ -50,7 +50,7 @@ Define your local folder paths (absolute paths recommended) and default model.
 {
   "input_folder": "/Users/your-user/Documents/input",
   "output_folder": "/Users/your-user/Documents/output",
-  "model_id": "ollama/llama3",
+  "model_id": "openai/llama-cpp",
   "max_budget_usd": 50.0
 }
 ```
@@ -58,7 +58,7 @@ Define your local folder paths (absolute paths recommended) and default model.
 > **⚠️ Note on Windows Paths:** In `config.json`, use forward slashes (e.g., `C:/Users/name/input`) or escaped backslashes (`C:\\Users\\name\\input`).
 
 ### 3. Docker Deployment
-Ricemaker is designed to run in Docker while bridging to your host machine's Ollama instance.
+Ricemaker is designed to run in Docker while bridging to your host machine's llama.cpp instance.
 
 #### Build the System
 If this is your first time or you've made changes to the code:
@@ -84,7 +84,7 @@ docker-compose down
 ```
 
 ### 4. Hardware Acceleration (Local LLMs)
-To use your local GPU for Ollama, ensure **Ollama** is running on your **Host OS** (not inside Docker). The `docker-compose.yaml` file uses `host.docker.internal` to bridge the container's requests back to your machine's hardware.
+To use your local GPU for llama.cpp, ensure **llama.cpp** is running on your **Host OS** (not inside Docker). The `docker-compose.yaml` file uses `host.docker.internal` to bridge the container's requests back to your machine's hardware.
 
 ---
 
@@ -103,5 +103,5 @@ Ricemaker maintains a clean record of its operations:
 
 ## ⚖️ License & Constraints
 - **Reliability:** Built for high-volume batch processing.
-- **Privacy:** Content stays local when using `ollama/*` models.
+- **Privacy:** Content stays local when using local models (e.g., `openai/llama-cpp`).
 - **Support:** Handles PDF, DOCX, XLSX, PPTX, TXT, MD, and more via Microsoft `MarkItDown`.

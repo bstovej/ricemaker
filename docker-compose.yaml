@@ -19,7 +19,7 @@ services:
       - ./config.json:/app/config.json
       - ./prompts.json:/app/prompts.json
     extra_hosts:
-      - "host.docker.internal:host-gateway" # Vital for connecting to host Ollama
+      - "host.docker.internal:host-gateway" # Vital for connecting to host llama.cpp server
     environment:
       - PYTHONUNBUFFERED=1
     restart: unless-stopped

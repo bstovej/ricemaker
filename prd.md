@@ -26,7 +26,7 @@ Ricemaker operates on a **MapReduce** strategy to handle large volumes of data w
 1.  **Ingestion:** User drops a file into the configured `input_folder`.
 2.  **Detection:** `WatcherHandler` triggers the `RicemakerAgent`.
 3.  **Extraction:** File is converted to Markdown (Docs) or Transcribed (Audio/Video).
-4.  **Inference:** `LiteLLM` calls the configured model (e.g., `ollama/llama3` or `google/gemini-1.5-flash`).
+4.  **Inference:** `LiteLLM` calls the configured model (e.g., `openai/llama-cpp` or `google/gemini-1.5-flash`).
 5.  **Output Generation:** A Markdown report with Obsidian-compliant YAML frontmatter (including `source` lineage) is saved to the `output_folder`.
 6.  **Logging:** Costs and latency are written to `stats.csv` and audit logs to `history.csv`.
 7.  **UI Update:** JavaScript frontend polls the Flask API and updates the browser view, separating active queue items from the archive.
@@ -35,15 +35,15 @@ Ricemaker operates on a **MapReduce** strategy to handle large volumes of data w
 
 ### 4.1 Deployment Environment
 * **Target:** Docker Desktop on Windows 11 or macOS (M-series/Intel).
-* **Resource Strategy:** Use the Host machine's GPU for Ollama to maximize speed and handle large files, while keeping the application logic isolated in Docker.
+* **Resource Strategy:** Use the Host machine's GPU for llama.cpp to maximize speed and handle large files, while keeping the application logic isolated in Docker.
 
 ### 4.2 Docker Configuration
-* **Networking:** The container uses `host.docker.internal` to bridge to the Ollama service running on the host OS.
+* **Networking:** The container uses `host.docker.internal` to bridge to the llama.cpp service running on the host OS.
 * **Volumes:** Root-level bind mounts (e.g., `/Volumes` and `/Users`) allow the agent to access NAS drives and local iCloud/Obsidian folders directly as defined in `config.json`.
 
 ### 4.3 Setup Steps
-1.  **Host Config:** Install Ollama on the Mac/Windows host.
-2.  **Secrets:** Populate `keys.json` with API keys and `OLLAMA_API_BASE`.
+1.  **Host Config:** Install llama.cpp on the Mac/Windows host.
+2.  **Secrets:** Populate `keys.json` with API keys and `LLAMA_CPP_API_BASE`.
 3.  **Config:** Set absolute paths for input/output in `config.json`.
 4.  **Build:** Run `docker-compose up --build -d` to initialize the environment.
 5.  **Access:** Open `http://localhost:1688` to monitor the agent.
@@ -52,7 +52,7 @@ Ricemaker operates on a **MapReduce** strategy to handle large volumes of data w
 * **Lineage Traceability:** Every output `.md` file MUST contain a `source` field in its YAML frontmatter pointing to the original filename.
 * **Large Volume Handling:** The UI must separate "Live Queue" (Pending/Processing) from "File Archive" (Completed/Errors) to handle thousands of files efficiently.
 * **Path Flexibility:** The system must support absolute paths across mapped volumes (NAS, iCloud, Local).
-* **Privacy:** If the model is set to `ollama:*`, no document content should leave the local network.
+* **Privacy:** If the model is set to `openai/llama-cpp` or other local backends, no document content should leave the local network.
 * **Budget Guardrail:** The system must stop processing if the total cost in `stats.csv` exceeds the `max_budget_usd`.
 
 ## 6. Project Manifest (File Structure)
