@@ -403,6 +403,147 @@ def move_files():
             
     return jsonify({"moved": moved, "errors": errors})
 
+def _purge_file_data(filename, plan):
+    """Helper to remove a file from plan, history, and delete intermediate chunks"""
+    # 1. Delete intermediate chunks
+    config = get_data('config.json')
+    intermediate_dir = Path(config.get('intermediate_folder', './intermediate'))
+    if intermediate_dir.exists():
+        for p in intermediate_dir.glob(f"{filename}_chunk_*.md"):
+            try: p.unlink()
+            except: pass
+            
+    # 2. Remove from plan
+    if filename in plan.get('files', {}):
+        del plan['files'][filename]
+        
+    # 3. Remove from history.csv
+    history_path = Path('history.csv')
+    if history_path.exists():
+        try:
+            df = pd.read_csv(history_path)
+            # Match by original filename in the path
+            df = df[~df['original_path'].fillna('').str.endswith(filename)]
+            df.to_csv(history_path, index=False)
+        except: pass
+
+@app.route('/api/cleanup/archived', methods=['POST'])
+def cleanup_archived():
+    plan = get_data('plan.json')
+    files_to_purge = [name for name, info in plan.get('files', {}).items() if info.get('status') == 'archived']
+    
+    for filename in files_to_purge:
+        _purge_file_data(filename, plan)
+        
+    Path('plan.json').write_text(json.dumps(plan, indent=2))
+    return jsonify({"success": True, "count": len(files_to_purge)})
+
+@app.route('/api/rereview/errors', methods=['POST'])
+def rereview_errors():
+    plan = get_data('plan.json')
+    config = get_data('config.json')
+    input_folder = Path(config.get('input_folder', './input'))
+    
+    count = 0
+    for name, info in plan.get('files', {}).items():
+        if info.get('status', '').startswith('error'):
+            info['status'] = 'pending'
+            info['timestamp'] = time.time()
+            # Touch the file
+            orig_file = input_folder / name
+            if orig_file.exists():
+                try: os.utime(orig_file, None)
+                except: pass
+            count += 1
+            
+    Path('plan.json').write_text(json.dumps(plan, indent=2))
+    return jsonify({"success": True, "count": count})
+
+@app.route('/api/master_report/purge/<path:filename>', methods=['POST'])
+def purge_master_report(filename):
+    import urllib.parse
+    decoded_name = urllib.parse.unquote(filename)
+    
+    # 1. Extract session ID: master_report_20260504_1107.md -> 20260504_1107
+    match = re.search(r'master_report_(.*?)\.md', decoded_name)
+    if not match:
+        return jsonify({"success": False, "error": "Invalid master report filename"}), 400
+    
+    session_id = match.group(1)
+    plan = get_data('plan.json')
+    
+    # 2. Identify files in this session
+    files_in_session = []
+    for name, info in plan.get('files', {}).items():
+        if info.get('session_id') == session_id:
+            files_in_session.append(name)
+            
+    # 3. Process files (Skip errors)
+    files_to_archive = []
+    files_to_purge = []
+    
+    for name in files_in_session:
+        status = plan['files'][name].get('status', '')
+        if status.startswith('error'):
+            continue # Skip errors
+        
+        if status == 'completed':
+            files_to_archive.append(name)
+            files_to_purge.append(name)
+        elif status == 'archived':
+            files_to_purge.append(name)
+            
+    # 4. Archive completed files first
+    if files_to_archive:
+        # We can't easily call move_files() directly due to request context, 
+        # so we'll implement the move logic or refactor it.
+        # For simplicity, I'll just trigger the archive logic here.
+        # Note: move_files needs a request with JSON.
+        pass # We will handle this in the next step by refactoring move_files
+        
+    # Trigger archiving for files_to_archive
+    # (Re-using logic from move_files internally)
+    config = get_data('config.json')
+    input_dir = Path(config.get('input_folder', './input'))
+    archive_dir = Path(config.get('archive_folder', './reviewed'))
+    output_dir = Path(config.get('output_folder', './output'))
+    
+    for name in files_to_archive:
+        orig_file = input_dir / name
+        if not orig_file.exists(): continue
+        
+        report_path = output_dir / f"{name}.md"
+        category = "General"
+        if report_path.exists():
+            content = report_path.read_text(encoding='utf-8')
+            match_tags = re.search(r'^tags:\s*\[?(?:["\'])?([^/"\',\]\s]+)', content, re.MULTILINE | re.IGNORECASE)
+            if match_tags: category = match_tags.group(1).strip()
+            
+        target_folder = archive_dir / category
+        target_folder.mkdir(parents=True, exist_ok=True)
+        dest_file = target_folder / name
+        
+        try:
+            shutil.move(str(orig_file), str(dest_file))
+            if report_path.exists():
+                content = report_path.read_text(encoding='utf-8')
+                new_content = re.sub(r'(^source:\s*").*?(")', f'\\1{dest_file.absolute()}\\2', content, flags=re.MULTILINE)
+                report_path.write_text(new_content, encoding='utf-8')
+        except: pass
+
+    # 5. Purge all (now) archived files in session
+    for name in files_to_purge:
+        _purge_file_data(name, plan)
+        
+    # 6. Delete master report
+    master_path = output_dir / decoded_name
+    if master_path.exists():
+        try: master_path.unlink()
+        except: pass
+        
+    Path('plan.json').write_text(json.dumps(plan, indent=2))
+    return jsonify({"success": True})
+
 if __name__ == '__main__':
     # Initialize the agent state to match logic on startup
     state_file = Path('agent_state.json')

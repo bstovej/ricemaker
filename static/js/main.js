@@ -517,12 +517,15 @@ async function refreshDashboard() {
                         const isSelected = (currentMasterReportSelection === r.name) || (!currentMasterReportSelection && r.name === summary.filename);
                         
                         reportsListBody.innerHTML += `
-                            <tr onclick="window.loadSpecificMasterReport('${r.name}')" style="cursor: pointer; background-color: ${isSelected ? 'rgba(59, 130, 246, 0.1)' : 'transparent'};">
-                                <td style="padding: 0.4rem 1rem; color: ${isSelected ? 'var(--accent-primary)' : 'var(--text-primary)'};">
+                            <tr style="background-color: ${isSelected ? 'rgba(59, 130, 246, 0.1)' : 'transparent'};">
+                                <td onclick="window.loadSpecificMasterReport('${r.name}')" style="cursor: pointer; padding: 0.4rem 1rem; color: ${isSelected ? 'var(--accent-primary)' : 'var(--text-primary)'};">
                                     <i data-lucide="file-text" style="width: 12px; height: 12px; vertical-align: middle; margin-right: 0.5rem;"></i>
                                     ${r.name}
                                 </td>
-                                <td style="padding: 0.4rem 1rem; text-align: right; color: var(--text-secondary); font-size: 0.7rem;">${dateStr}</td>
+                                <td style="padding: 0.4rem 1rem; text-align: right;">
+                                    <span style="color: var(--text-secondary); font-size: 0.7rem; margin-right: 0.5rem;">${dateStr}</span>
+                                    <button onclick="event.stopPropagation(); window.purgeMasterReport('${r.name}')" class="btn btn-outline" style="padding: 0.1rem 0.3rem; font-size: 0.6rem; color: var(--status-error); border-color: rgba(239, 68, 68, 0.2);"><i data-lucide="trash-2" style="width: 10px; height: 10px;"></i> Purge</button>
+                                </td>
                             </tr>
                         `;
                     });
@@ -682,4 +685,44 @@ window.cleanupMissingFiles = async function() {
         await fetch('/api/remove/' + encodeURIComponent(filename), { method: 'POST' });
     }
     refreshDashboard();
+};
+
+window.purgeArchived = async function() {
+    if (!confirm('Permanently remove ALL archived files from the dashboard and delete their intermediate chunk files?')) return;
+    try {
+        const res = await fetch('/api/cleanup/archived', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            alert(`Successfully purged ${data.count} archived file entries and their data.`);
+            refreshDashboard();
+        }
+    } catch (err) { console.error(err); }
+};
+
+window.rereviewAllErrors = async function() {
+    if (!confirm('Reset all failed files to "pending" to try reviewing them again?')) return;
+    try {
+        const res = await fetch('/api/rereview/errors', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            alert(`Successfully reset ${data.count} failed files.`);
+            refreshDashboard();
+        }
+    } catch (err) { console.error(err); }
+};
+
+window.purgeMasterReport = async function(filename) {
+    if (!confirm(`CAUTION: This will delete the master report "${filename}", archive all its completed files, and permanently purge their intermediate data and plan entries. Proceed?`)) return;
+    
+    try {
+        const res = await fetch(`/api/master_report/purge/${encodeURIComponent(filename)}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            alert('Master report purged and associated data cleaned up.');
+            if (currentMasterReportSelection === filename) currentMasterReportSelection = "";
+            refreshDashboard();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (err) { console.error(err); }
 };

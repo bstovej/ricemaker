@@ -162,7 +162,7 @@ class RicemakerAgent:
         
         if not file_path.exists():
             logging.error(f"File {file_path} not found. Marking as missing.")
-            self.update_state(file_path.name, "error (missing)")
+            self.update_state(file_path.name, "error (missing)", session_id=self.session_id_str)
             return
 
         # --- NEW: Check History for Skips ---
@@ -176,7 +176,7 @@ class RicemakerAgent:
             logging.info(f"Skipping {file_path.name} (already found in history.csv and status is {f_plan_status})")
             # Update plan.json so UI doesn't think it's pending. Set timestamp=0 so it defaults to Archive view
             if f_plan_status == 'pending': # This should not happen now but for safety
-                self.update_state(file_path.name, "completed", timestamp=0)
+                self.update_state(file_path.name, "completed", timestamp=0, session_id=self.session_id_str)
             return
 
         logging.info(f"Processing: {file_path.name}")
@@ -186,7 +186,7 @@ class RicemakerAgent:
             return
 
         # 1. Extraction
-        self.update_state(file_path.name, "Processing (Extracting Text)")
+        self.update_state(file_path.name, "Processing (Extracting Text)", session_id=self.session_id_str)
         start_time = time.time()
         md = MarkItDown()
         try:
@@ -220,7 +220,7 @@ class RicemakerAgent:
                     continue
 
                 progress = f"Processing ({idx+1}/{num_chunks})"
-                self.update_state(file_path.name, progress)
+                self.update_state(file_path.name, progress, session_id=self.session_id_str)
                 
                 if num_chunks > 1:
                     logging.info(f"Processing chunk {idx+1}/{num_chunks} for {file_path.name}...")
@@ -267,7 +267,7 @@ class RicemakerAgent:
                     
                     # Update UI Status
                     progress = f"Consolidating ({i//MAX_CONSOLIDATION_BATCH + 1}/{ (len(chunk_reviews) + MAX_CONSOLIDATION_BATCH - 1) // MAX_CONSOLIDATION_BATCH })"
-                    self.update_state(file_path.name, progress)
+                    self.update_state(file_path.name, progress, session_id=self.session_id_str)
                     
                     batch_summary = self._call_llm(
                         self.prompts.get("consolidation", "You are a subject matter expert. Consolidate these segment reviews into a single, cohesive executive summary with clear headings."),
@@ -305,7 +305,7 @@ class RicemakerAgent:
             
             # 4. Update Plan & Stats
             summary_path = Path(self.config['output_folder']) / f"{file_path.name}.md"
-            self.update_state(file_path.name, "completed", final_result, tags=tags, moc_blurb=moc_blurb)
+            self.update_state(file_path.name, "completed", final_result, tags=tags, moc_blurb=moc_blurb, session_id=self.session_id_str)
             
             # Log to history
             self.log_history(file_path, summary_path, "completed", model_used=self.active_model)
@@ -331,7 +331,7 @@ class RicemakerAgent:
             
         except Exception as e:
             logging.error(f"Error processing {file_path.name}: {e}")
-            self.update_state(file_path.name, "error", error_msg=str(e))
+            self.update_state(file_path.name, "error", error_msg=str(e), session_id=self.session_id_str)
             self.log_history(file_path, "N/A", "error", model_used=self.active_model)
             # Log failure stats if possible (with 0 tokens)
             self.log_stats(file_path.name, file_path.suffix.lower(), self.active_model, 0, 0, 0, 0)
@@ -439,7 +439,7 @@ class RicemakerAgent:
         ]
         return "\n".join(frontmatter)
 
-    def update_state(self, filename, status, result=None, tags=None, moc_blurb=None, error_msg=None, timestamp=None):
+    def update_state(self, filename, status, result=None, tags=None, moc_blurb=None, error_msg=None, timestamp=None, session_id=None):
         plan = self.load_json('plan.json')
         if 'files' not in plan:
             plan['files'] = {}
@@ -448,7 +448,8 @@ class RicemakerAgent:
             "timestamp": timestamp if timestamp is not None else time.time(),
             "model": self.active_model,
             "moc_blurb": moc_blurb,
-            "error_msg": error_msg
+            "error_msg": error_msg,
+            "session_id": session_id or plan.get('files', {}).get(filename, {}).get('session_id')
         }
         Path('plan.json').write_text(json.dumps(plan, indent=2))
         
@@ -639,7 +640,7 @@ if __name__ == "__main__":
                                 logging.error(f"Failed to move {filename}: {e}")
                         else:
                             logging.warning(f"File {filename} not found in archives. Marking as missing.")
-                            agent.update_state(filename, "error (missing)")
+                            agent.update_state(filename, "error (missing)", session_id=agent.session_id_str)
         except Exception as e:
             logging.error(f"Error during auto-recovery scan: {e}")
 
