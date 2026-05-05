@@ -186,6 +186,25 @@ def summary(filename=None):
     # Sort by modification time (newest first)
     master_files.sort(key=lambda f: f.stat().st_mtime, reverse=True)
     
+    # --- NEW: Filter by active plan entries (Hide purged reports) ---
+    plan = get_data('plan.json')
+    active_sessions = set()
+    for f_info in plan.get('files', {}).values():
+        sid = f_info.get('session_id')
+        if sid: active_sessions.add(sid)
+        
+    filtered_master_files = []
+    for f in master_files:
+        # 1. Check for session ID in filename
+        match = re.search(r'master_report_(.*?)\.md', f.name)
+        if match:
+            if match.group(1) in active_sessions:
+                filtered_master_files.append(f)
+        # 2. Always show legacy master_report.md if it exists
+        elif f.name == 'master_report.md':
+            filtered_master_files.append(f)
+            
+    master_files = filtered_master_files
     report_list = [{"name": f.name, "modified": f.stat().st_mtime} for f in master_files]
     
     if not master_files:
