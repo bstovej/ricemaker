@@ -531,15 +531,14 @@ def purge_master_report(filename):
                 report_path.write_text(new_content, encoding='utf-8')
         except: pass
 
-    # 5. Purge all (now) archived files in session
+    # 5. Purge tracking data and intermediate files for all (now) archived files in session
     for name in files_to_purge:
         _purge_file_data(name, plan)
         
-    # 6. Delete master report
-    master_path = output_dir / decoded_name
-    if master_path.exists():
-        try: master_path.unlink()
-        except: pass
+    # 6. We do NOT delete the master report markdown file or individual summaries.
+    # By removing the session files from plan.json, the master report will naturally
+    # stop showing up in the "Master Summaries" list because the list is derived
+    # from files currently tracked in the plan.
         
     Path('plan.json').write_text(json.dumps(plan, indent=2))
     return jsonify({"success": True})
