@@ -704,12 +704,14 @@ window.purgeArchived = async function() {
 };
 
 window.rereviewAllErrors = async function() {
-    if (!confirm('Reset all failed files to "pending" to try reviewing them again?')) return;
+    if (!confirm('Reset all failed files to "pending" to try reviewing them again? Files that are no longer in the input folder will be permanently removed from the list.')) return;
     try {
         const res = await fetch('/api/rereview/errors', { method: 'POST' });
         const data = await res.json();
         if (data.success) {
-            alert(`Successfully reset ${data.count} failed files.`);
+            let msg = `Successfully reset ${data.reset_count} failed files.`;
+            if (data.purged_count > 0) msg += `\nRemoved ${data.purged_count} files that were missing from the input folder.`;
+            alert(msg);
             refreshDashboard();
         }
     } catch (err) { console.error(err); }

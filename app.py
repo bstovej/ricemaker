@@ -444,20 +444,34 @@ def rereview_errors():
     config = get_data('config.json')
     input_folder = Path(config.get('input_folder', './input'))
     
-    count = 0
-    for name, info in plan.get('files', {}).items():
+    count_reset = 0
+    count_purged = 0
+    
+    # We need to iterate over a copy of keys because we might delete items
+    filenames = list(plan.get('files', {}).keys())
+    
+    for name in filenames:
+        info = plan['files'][name]
         if info.get('status', '').startswith('error'):
-            info['status'] = 'pending'
-            info['timestamp'] = time.time()
-            # Touch the file
             orig_file = input_folder / name
             if orig_file.exists():
+                # 1. Reset for re-review
+                info['status'] = 'pending'
+                info['timestamp'] = time.time()
                 try: os.utime(orig_file, None)
                 except: pass
-            count += 1
+                count_reset += 1
+            else:
+                # 2. File missing, purge data instead of resetting
+                _purge_file_data(name, plan)
+                count_purged += 1
             
     Path('plan.json').write_text(json.dumps(plan, indent=2))
-    return jsonify({"success": True, "count": count})
+    return jsonify({
+        "success": True, 
+        "reset_count": count_reset, 
+        "purged_count": count_purged
+    })
 
 @app.route('/api/master_report/purge/<path:filename>', methods=['POST'])
 def purge_master_report(filename):
