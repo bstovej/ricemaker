@@ -360,6 +360,10 @@ async function refreshDashboard() {
         const filesRes = await fetch(`/api/files?t=${ts}`);
         const folderFiles = await filesRes.json();
         
+        const queueBody = document.getElementById('status-table-body');
+        const completedBody = document.getElementById('archive-completed-body');
+        const errorBody = document.getElementById('archive-error-body');
+
         let queueHtml = '';
         let completedHtml = '';
         let errorHtml = '';
