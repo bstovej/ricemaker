@@ -1,0 +1,12 @@
+{
+  "archive_folder": "/Volumes/home/archives/reviewed",
+  "audio_translation": true,
+  "category": "Resources",
+  "input_folder": "/Users/bstove/Library/CloudStorage/OneDrive-AveritusPteLtd/ref/to_review",
+  "intermediate_folder": "./intermediate",
+  "max_budget_usd": 10,
+  "model_name": "openai/gemma-4-E4B-it-Q8_0.gguf",
+  "output_folder": "/Users/bstove/Library/Mobile Documents/iCloud~md~obsidian/Documents/Notes-Vault/00_Inbox/ricemaker",
+  "prompts_file": "prompts.json",
+  "secondary_model_name": "openai/gemma-4-E4B-it-Q8_0.gguf"
+}

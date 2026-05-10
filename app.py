@@ -279,7 +279,7 @@ def rereview(filename):
     archive_folder = Path(config.get('archive_folder', './reviewed'))
 
     # 0. Check legacy archives (prioritize host-mapped path if accessible)
-    host_legacy = Path('/Users/bstove/LocalDocs/projects/ricemaker/reviewed')
+    host_legacy = Path('/Users/bstove/Library/CloudStorage/SynologyDrive-local/projects/ricemaker/reviewed')
     legacy_archive = Path('./reviewed')
 
     orig_file = input_folder / decoded_name
@@ -370,35 +370,8 @@ def move_files():
             continue
             
         report_path = output_dir / f"{filename}.md"
-        category = "General"
         
-        file_plan = plan.get('files', {}).get(filename, {})
-        if file_plan.get('status', '').startswith('error'):
-            category = "error_files"
-        elif report_path.exists():
-            content = report_path.read_text(encoding='utf-8')
-            match = re.search(r'^tags:\s*\[?(?:["\'])?([^/"\',\]\s]+)', content, re.MULTILINE | re.IGNORECASE)
-            if match:
-                category = match.group(1).strip()
-            else:
-                # Fallback to category if tags not found
-                match_cat = re.search(r'^category:\s*"?(.*?)"?\s*$', content, re.MULTILINE)
-                if match_cat and match_cat.group(1).lower() != 'resource':
-                    category = match_cat.group(1).replace('/', '_')
-        
-        cat_lower = category.lower()
-        existing_folders = [d.name for d in archive_dir.iterdir() if d.is_dir()]
-        matched_folder = None
-        for folder in existing_folders:
-            if cat_lower in folder.lower() or folder.lower() in cat_lower:
-                matched_folder = folder
-                break
-                
-        if not matched_folder:
-            matched_folder = category
-            (archive_dir / matched_folder).mkdir(exist_ok=True)
-            
-        dest_file = archive_dir / matched_folder / filename
+        dest_file = archive_dir / filename
         try:
             shutil.move(str(orig_file), str(dest_file))
             moved.append(filename)
@@ -546,15 +519,7 @@ def purge_master_report(filename):
         if not orig_file.exists(): continue
         
         report_path = output_dir / f"{name}.md"
-        category = "General"
-        if report_path.exists():
-            content = report_path.read_text(encoding='utf-8')
-            match_tags = re.search(r'^tags:\s*\[?(?:["\'])?([^/"\',\]\s]+)', content, re.MULTILINE | re.IGNORECASE)
-            if match_tags: category = match_tags.group(1).strip()
-            
-        target_folder = archive_dir / category
-        target_folder.mkdir(parents=True, exist_ok=True)
-        dest_file = target_folder / name
+        dest_file = archive_dir / name
         
         try:
             shutil.move(str(orig_file), str(dest_file))

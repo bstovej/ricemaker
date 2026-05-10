@@ -45,15 +45,19 @@ Used for API keys and endpoint configuration.
 ```
 
 #### `config.json`
-Define your local folder paths (absolute paths recommended) and default model.
+Define your local folder paths (absolute paths recommended), default model, and batch category.
 ```json
 {
   "input_folder": "/Users/your-user/Documents/input",
   "output_folder": "/Users/your-user/Documents/output",
+  "archive_folder": "/Users/your-user/Documents/reviewed",
+  "category": "Resources",
   "model_id": "openai/llama-cpp",
   "max_budget_usd": 50.0
 }
 ```
+
+> **Note on Archiving:** When files are archived, they are moved to a flat structure inside the `archive_folder` for easier retrieval and searching.
 
 > **⚠️ Note on Windows Paths:** In `config.json`, use forward slashes (e.g., `C:/Users/name/input`) or escaped backslashes (`C:\\Users\\name\\input`).
 

@@ -414,7 +414,9 @@ class RicemakerAgent:
         if not tags:
             tags = ["ai/research"]
             
-        primary_category = tags[0].split('/')[0] if tags and '/' in tags[0] else tags[0]
+        # Use category from config if available, otherwise fallback to tags
+        config_category = self.config.get('category', 'Resources')
+        primary_category = config_category
         
         # Clean up summary for the frontmatter (single line, escaped quotes)
         clean_summary = summary_text.split('\n')[0].replace('"', '\\"').strip()
@@ -599,7 +601,7 @@ if __name__ == "__main__":
         try:
             plan = agent.load_json('plan.json')
             archive_folder = Path(agent.config.get('archive_folder', './reviewed'))
-            host_legacy = Path('/Users/bstove/LocalDocs/projects/ricemaker/reviewed')
+            host_legacy = Path('/Users/bstove/Library/CloudStorage/SynologyDrive-local/projects/ricemaker/reviewed')
             legacy_archive = Path('./reviewed')
 
             for filename, info in plan.get('files', {}).items():
