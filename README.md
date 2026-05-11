@@ -48,6 +48,13 @@ The system relies on JSON configuration files that are ignored by Git for securi
 ### 3. Docker Deployment
 Ricemaker is designed to run in Docker while bridging to your host machine's llama.cpp instance.
 
+#### Prepare Docker Configuration
+1. **Copy the sample:**
+   ```bash
+   cp sample_docker-compose.yaml docker-compose.yaml
+   ```
+2. **Edit `docker-compose.yaml`** to ensure your host directories (like `/Users/your-user`) are correctly mapped so the agent can access your files.
+
 #### Build the System
 If this is your first time or you've made changes to the code:
 ```bash

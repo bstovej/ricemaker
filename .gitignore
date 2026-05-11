@@ -2,12 +2,13 @@
 GEMINI.md
 history.csv
 config.json
+keys.json
+docker-compose.yaml
 input/
 intermediate/
 output/
 plan.json
 reviewed/
 stats.csv
-keys.json
 prompts.json
 90_System/

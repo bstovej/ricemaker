@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   ai-agent:
     build: .
@@ -7,9 +5,13 @@ services:
     ports:
       - "1688:1688"
     volumes:
-      # Map the Mac's root-level access points
+      # Map host-level access points (adjust for your OS)
+      # macOS Example:
       - /Volumes:/Volumes
-      - /Users/bstove:/Users/bstove
+      - /Users/your-user:/Users/your-user
+      # Windows Example (uncomment and adjust):
+      # - C:/Users/your-user:/Users/your-user
+
       # Keep app state local to the project
       - ./intermediate:/app/intermediate
       - ./plan.json:/app/plan.json
@@ -25,4 +27,3 @@ services:
       - OPENAI_API_KEY=sk-local-llama-cpp
       - OPENAI_API_BASE=http://host.docker.internal:8080/v1
     restart: unless-stopped
-
