@@ -31,31 +31,15 @@ cd ricemaker
 ```
 
 ### 2. Configuration
-The system relies on JSON configuration files that are ignored by Git for security and local flexibility. You must create them in the project root:
+The system relies on JSON configuration files that are ignored by Git for security and local flexibility. Use the provided sample files as a starting point:
 
-#### `keys.json`
-Used for API keys and endpoint configuration.
-```json
-{
-  "LLAMA_CPP_API_BASE": "http://host.docker.internal:8080/v1",
-  "OPENAI_API_KEY": "sk-...",
-  "ANTHROPIC_API_KEY": "sk-...",
-  "GOOGLE_API_KEY": "..."
-}
-```
-
-#### `config.json`
-Define your local folder paths (absolute paths recommended), default model, and batch category.
-```json
-{
-  "input_folder": "/Users/your-user/Documents/input",
-  "output_folder": "/Users/your-user/Documents/output",
-  "archive_folder": "/Users/your-user/Documents/reviewed",
-  "category": "Resources",
-  "model_id": "openai/llama-cpp",
-  "max_budget_usd": 50.0
-}
-```
+1. **Copy the samples:**
+   ```bash
+   cp sample_keys.json keys.json
+   cp sample_config.json config.json
+   ```
+2. **Edit `keys.json`** with your API keys and endpoint configuration.
+3. **Edit `config.json`** to define your local folder paths (absolute paths recommended), default model, and batch category.
 
 > **Note on Archiving:** When files are archived, they are moved to a flat structure inside the `archive_folder` for easier retrieval and searching.
 

@@ -1,0 +1,12 @@
+{
+  "archive_folder": "./reviewed",
+  "audio_translation": true,
+  "category": "General",
+  "input_folder": "./input",
+  "intermediate_folder": "./intermediate",
+  "max_budget_usd": 100,
+  "model_name": "your-model-name",
+  "output_folder": "./output",
+  "prompts_file": "prompts.json",
+  "secondary_model_name": "your-model-name"
+}
