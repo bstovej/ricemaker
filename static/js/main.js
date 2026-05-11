@@ -220,22 +220,36 @@ async function viewReport(filename) {
         const res = await fetch(`/api/report/${encodeURIComponent(filename)}`);
         const data = await res.json();
         
+        const contentContainer = (currentView === 'archive') ? 
+            document.getElementById('archive-summary-content') : 
+            document.getElementById('modal-content');
+
+        if (res.ok && data.content) {
+            if (contentContainer) renderMarkdownWithYaml(contentContainer, data.content);
+        } else {
+            const errorMsg = data.error || "Report content is empty.";
+            if (contentContainer) {
+                contentContainer.innerHTML = `
+                    <div style="padding: 2rem; color: var(--status-error); background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 0.5rem;">
+                        <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;"><i data-lucide="alert-circle"></i> Failed to Load Report</h3>
+                        <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.875rem;">${errorMsg}</p>
+                        <p style="margin-top: 1rem; font-size: 0.8125rem; color: var(--text-secondary);">This usually happens if the report file was moved or deleted from the output folder.</p>
+                    </div>`;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        }
+
         if (currentView === 'archive') {
-            const container = document.getElementById('archive-summary-content');
-            if (container && data.content) renderMarkdownWithYaml(container, data.content);
             const btnArchive = document.getElementById('btn-archive-current');
             const btnReReview = document.getElementById('btn-rereview');
             if (btnArchive) btnArchive.style.display = 'inline-flex';
             if (btnReReview) btnReReview.style.display = 'inline-flex';
         } else {
-            // Use Modal for Dashboard file previews
+            // Dashboard Modal view
             const modal = document.getElementById('report-modal');
-            const modalContent = document.getElementById('modal-content');
             const modalTitle = document.getElementById('modal-title');
-            
-            if (modal && modalContent) {
+            if (modal) {
                 modalTitle.innerText = `File Report: ${filename}`;
-                renderMarkdownWithYaml(modalContent, data.content || "# No Content\nReport text not found.");
                 modal.style.display = 'flex';
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             }

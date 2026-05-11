@@ -141,11 +141,8 @@ def get_report(filename):
     config = get_data('config.json')
     output_dir = Path(config.get('output_folder', './output'))
     
-    # Flask <path:filename> might already be decoded, but let's be safe
+    # Flask <path:filename> usually decodes slashes and spaces, but let's ensure clean decoding
     decoded_name = urllib.parse.unquote(filename)
-    
-    # The agent saves as "filename.ext.md"
-    report_path = output_dir / f"{decoded_name}.md"
     
     # Check if there is an error message in plan.json
     plan = get_data('plan.json')
@@ -153,12 +150,27 @@ def get_report(filename):
     if file_plan.get('status', '').startswith('error') and file_plan.get('error_msg'):
         return jsonify({"content": f"# Extraction Failed\n\n**File:** `{decoded_name}`\n\n**Error Result:**\n```text\n{file_plan.get('error_msg')}\n```"})
 
+    # The agent normally saves as "filename.ext.md"
+    report_filename = f"{decoded_name}.md" if not decoded_name.endswith('.md') else decoded_name
+    report_path = output_dir / report_filename
+    
+    # 1. Primary check: direct hit in output_dir
     if not report_path.exists():
-        # Fallback: maybe the filename already has .md in the request?
-        if not decoded_name.endswith('.md'):
-            report_path = output_dir / f"{decoded_name}.md"
+        # 2. Fallback: Search recursively in output_dir
+        matches = list(output_dir.rglob(report_filename))
+        if matches:
+            report_path = matches[0]
         else:
-            report_path = output_dir / decoded_name
+            # 3. Fallback: Search in the vault root (parent of output_dir or grandparent)
+            # We'll try searching from the grandparent if output_dir is nested (like 00_Inbox/ricepack)
+            vault_root = output_dir.parent
+            if "00_Inbox" in vault_root.name:
+                vault_root = vault_root.parent
+            
+            if vault_root.exists():
+                matches = list(vault_root.rglob(report_filename))
+                if matches:
+                    report_path = matches[0]
 
     if report_path.exists():
         try:
@@ -166,7 +178,7 @@ def get_report(filename):
         except Exception as e:
             return jsonify({"error": f"Read failed: {str(e)}"}), 500
     
-    return jsonify({"error": f"Report not found at {report_path}"}), 404
+    return jsonify({"error": f"Report not found. Looked for '{report_filename}' in {output_dir} and its parent."}), 404
 
 @app.route('/api/summary')
 @app.route('/api/summary/<path:filename>')
