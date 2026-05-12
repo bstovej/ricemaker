@@ -7,9 +7,12 @@ from watchdog.observers.polling import PollingObserver as Observer
 from watchdog.events import FileSystemEventHandler
 
 # Setup logging
+DATA_DIR = Path('data')
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
 logging.basicConfig(level=logging.INFO, 
                     format='%(asctime)s - %(message)s',
-                    handlers=[logging.FileHandler('agent.log'), logging.StreamHandler()])
+                    handlers=[logging.FileHandler(DATA_DIR / 'agent.log'), logging.StreamHandler()])
 
 class RicemakerAgent:
     def __init__(self):
@@ -42,7 +45,7 @@ class RicemakerAgent:
             "active_model": self.active_model,
             "last_active": time.time()
         }
-        Path('session_stats.json').write_text(json.dumps(stats, indent=2))
+        (DATA_DIR / 'session_stats.json').write_text(json.dumps(stats, indent=2))
 
     def _call_llm(self, system_prompt, user_content):
         """Internal helper to route LLM calls with retry-and-fallback logic"""
@@ -92,7 +95,7 @@ class RicemakerAgent:
 
     def load_history(self):
         """Loads the completion history to check for skips"""
-        history_path = Path('history.csv')
+        history_path = DATA_DIR / 'history.csv'
         if not history_path.exists():
             return set()
         
@@ -106,7 +109,7 @@ class RicemakerAgent:
 
     def log_history(self, original_path, summary_path, status, model_used=None):
         """Writes a detailed audit log to history.csv"""
-        history_path = Path('history.csv')
+        history_path = DATA_DIR / 'history.csv'
         file_exists = history_path.exists()
         
         import pandas as pd
@@ -125,7 +128,7 @@ class RicemakerAgent:
 
     def log_stats(self, filename, file_type, model, prompt_tokens, completion_tokens, extraction_time, inference_time):
         """Writes detailed performance and token metrics to stats.csv"""
-        stats_path = Path('stats.csv')
+        stats_path = DATA_DIR / 'stats.csv'
         file_exists = stats_path.exists()
         
         import pandas as pd
@@ -169,7 +172,7 @@ class RicemakerAgent:
         completed_paths = self.load_history()
         
         # Only skip if found in history AND NOT marked as 'pending' in plan.json
-        plan = self.load_json('plan.json')
+        plan = self.load_json(DATA_DIR / 'plan.json')
         f_plan_status = plan.get('files', {}).get(file_path.name, {}).get('status', '')
         
         if str(file_path.absolute()) in completed_paths and f_plan_status != 'pending':
@@ -366,7 +369,7 @@ class RicemakerAgent:
         now_dt = datetime.now()
         output_dir = Path(self.config['output_folder'])
         
-        plan = self.load_json('plan.json')
+        plan = self.load_json(DATA_DIR / 'plan.json')
         # Only files from current session (post session_start) that are completed
         session_files = [name for name, info in plan.get('files', {}).items() 
                          if info['status'] == 'completed' and info['timestamp'] >= self.session_start]
@@ -442,7 +445,7 @@ class RicemakerAgent:
         return "\n".join(frontmatter)
 
     def update_state(self, filename, status, result=None, tags=None, moc_blurb=None, error_msg=None, timestamp=None, session_id=None):
-        plan = self.load_json('plan.json')
+        plan = self.load_json(DATA_DIR / 'plan.json')
         if 'files' not in plan:
             plan['files'] = {}
         plan['files'][filename] = {
@@ -453,7 +456,7 @@ class RicemakerAgent:
             "error_msg": error_msg,
             "session_id": session_id or plan.get('files', {}).get(filename, {}).get('session_id')
         }
-        Path('plan.json').write_text(json.dumps(plan, indent=2))
+        (DATA_DIR / 'plan.json').write_text(json.dumps(plan, indent=2))
         
         if result:
             # --- FIXED: Final reports go to output/ with Frontmatter ---
@@ -471,7 +474,7 @@ class RicemakerAgent:
             priority = -mtime
             
             # Adjust priority based on current file status
-            plan = self.load_json('plan.json')
+            plan = self.load_json(DATA_DIR / 'plan.json')
             f_status = plan.get('files', {}).get(file_path.name, {}).get('status', '')
             if f_status == 'pending':
                 # Strong boost: negative number makes it highest priority
@@ -497,9 +500,10 @@ class RicemakerAgent:
                 last_heartbeat = time.time()
 
             # Check agent state
-            if Path('agent_state.json').exists():
+            state_file = DATA_DIR / 'agent_state.json'
+            if state_file.exists():
                 try:
-                    state_data = self.load_json('agent_state.json')
+                    state_data = self.load_json(state_file)
                     agent_state = state_data.get('state', 'running').lower()
                 except Exception:
                     agent_state = 'running'
@@ -599,7 +603,7 @@ if __name__ == "__main__":
 
         # --- NEW: Auto-recover stuck pending files ---
         try:
-            plan = agent.load_json('plan.json')
+            plan = agent.load_json(DATA_DIR / 'plan.json')
             archive_folder = Path(agent.config.get('archive_folder', './reviewed'))
             host_legacy = Path('/Users/bstove/Library/CloudStorage/SynologyDrive-local/projects/ricemaker/reviewed')
             legacy_archive = Path('./reviewed')
@@ -651,8 +655,9 @@ if __name__ == "__main__":
     
     # Final check before starting observer
     if is_accessible:
-        if not Path('agent_state.json').exists():
-            Path('agent_state.json').write_text(json.dumps({"state": "running"}, indent=2))
+        state_file = DATA_DIR / 'agent_state.json'
+        if not state_file.exists():
+            state_file.write_text(json.dumps({"state": "running"}, indent=2))
 
         event_handler = WatcherHandler(agent)
         observer = Observer()

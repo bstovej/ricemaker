@@ -9,7 +9,7 @@ Ricemaker is a high-reliability "MapReduce" agent that transforms raw local file
 - **Dual-Panel Dashboard:** Separates "Live Queue" (active work) from "File Archive" (thousands of processed items) for efficient batch management.
 - **MapReduce Processing:** Handles massive files by chunking them before consolidation.
 - **Local Privacy:** Optimized to use your Mac/Windows GPU via llama.cpp to keep data on your machine.
-- **Durable Progress:** Persistent checkpoints (`plan.json` and `history.csv`) ensure zero work is lost on restart.
+- **Durable Progress:** Persistent checkpoints (`data/plan.json` and `data/history.csv`) ensure zero work is lost on restart.
 
 ---
 
@@ -92,7 +92,8 @@ Ricemaker maintains a clean record of its operations:
 - **`input_folder`**: Raw files to be reviewed.
 - **`output_folder`**: Final `.md` reports with frontmatter.
 - **`intermediate/`**: Raw AI chunks before consolidation.
-- **`history.csv`**: Permanent audit log of original paths vs. summary paths.
+- **`data/`**: Persistent state memory, audit logs, and metrics.
+- **`data/history.csv`**: Permanent audit log of original paths vs. summary paths.
 
 ---
 

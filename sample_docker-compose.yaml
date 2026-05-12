@@ -13,10 +13,8 @@ services:
       # - C:/Users/your-user:/Users/your-user
 
       # Keep app state local to the project
+      - ./data:/app/data
       - ./intermediate:/app/intermediate
-      - ./plan.json:/app/plan.json
-      - ./stats.csv:/app/stats.csv
-      - ./history.csv:/app/history.csv
       - ./keys.json:/app/keys.json
       - ./config.json:/app/config.json
       - ./prompts.json:/app/prompts.json

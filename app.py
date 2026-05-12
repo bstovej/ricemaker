@@ -4,6 +4,9 @@ import json, subprocess, shutil, os, time, re
 import pandas as pd
 app = Flask(__name__)
 
+DATA_DIR = Path('data')
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
 def get_data(file):
     path = Path(file)
     return json.loads(path.read_text()) if path.exists() else {}
@@ -27,7 +30,7 @@ def stop_agent():
 
 @app.route('/api/agent/state', methods=['GET', 'POST'])
 def agent_state():
-    state_file = Path('agent_state.json')
+    state_file = DATA_DIR / 'agent_state.json'
     if request.method == 'POST':
         new_state = request.json.get('state', 'running').lower()
         if new_state == 'stopped':
@@ -93,12 +96,12 @@ def get_cached_data(key, getter, ttl=5):
 @app.route('/api/status')
 def status():
     """Returns the current processing plan for the dashboard"""
-    return jsonify(get_cached_data('plan.json', lambda: get_data('plan.json'), ttl=3))
+    return jsonify(get_cached_data('plan.json', lambda: get_data(DATA_DIR / 'plan.json'), ttl=3))
 
 @app.route('/api/session')
 def session_stats():
     """Returns current session progress and token counts"""
-    return jsonify(get_cached_data('session_stats.json', lambda: get_data('session_stats.json'), ttl=3))
+    return jsonify(get_cached_data('session_stats.json', lambda: get_data(DATA_DIR / 'session_stats.json'), ttl=3))
 
 @app.route('/api/files')
 def list_files():
@@ -127,8 +130,9 @@ def stats():
     """Returns cost and latency data from stats.csv"""
     def _get_stats():
         import pandas as pd
-        if Path('stats.csv').exists():
-            df = pd.read_csv('stats.csv')
+        stats_path = DATA_DIR / 'stats.csv'
+        if stats_path.exists():
+            df = pd.read_csv(stats_path)
             return df.to_dict(orient='records')
         return []
     
@@ -145,7 +149,7 @@ def get_report(filename):
     decoded_name = urllib.parse.unquote(filename)
     
     # Check if there is an error message in plan.json
-    plan = get_data('plan.json')
+    plan = get_data(DATA_DIR / 'plan.json')
     file_plan = plan.get('files', {}).get(decoded_name, {})
     if file_plan.get('status', '').startswith('error') and file_plan.get('error_msg'):
         return jsonify({"content": f"# Extraction Failed\n\n**File:** `{decoded_name}`\n\n**Error Result:**\n```text\n{file_plan.get('error_msg')}\n```"})
@@ -199,7 +203,7 @@ def summary(filename=None):
     master_files.sort(key=lambda f: f.stat().st_mtime, reverse=True)
     
     # --- NEW: Filter by active plan entries (Hide purged reports) ---
-    plan = get_data('plan.json')
+    plan = get_data(DATA_DIR / 'plan.json')
     active_sessions = set()
     for f_info in plan.get('files', {}).values():
         sid = f_info.get('session_id')
@@ -256,8 +260,8 @@ def remove_file(filename):
     import urllib.parse
     decoded_name = urllib.parse.unquote(filename)
     
-    plan_path = Path('plan.json')
-    history_path = Path('history.csv')
+    plan_path = DATA_DIR / 'plan.json'
+    history_path = DATA_DIR / 'history.csv'
     
     if plan_path.exists():
         try:
@@ -283,8 +287,8 @@ def rereview(filename):
     import urllib.parse
     decoded_name = urllib.parse.unquote(filename)
     
-    plan_path = Path('plan.json')
-    history_path = Path('history.csv')
+    plan_path = DATA_DIR / 'plan.json'
+    history_path = DATA_DIR / 'history.csv'
     
     config = get_data('config.json')
     input_folder = Path(config.get('input_folder', './input'))
@@ -366,7 +370,7 @@ def move_files():
     if not archive_dir.exists():
         archive_dir.mkdir(parents=True)
         
-    plan = get_data('plan.json')
+    plan = get_data(DATA_DIR / 'plan.json')
     files_to_move = target_files
     if not target_files:
         files_to_move = [k for k, v in plan.get('files', {}).items() if v.get('status') == 'completed']
@@ -401,7 +405,7 @@ def move_files():
             
     if moved:
         try:
-            Path('plan.json').write_text(json.dumps(plan, indent=2))
+            (DATA_DIR / 'plan.json').write_text(json.dumps(plan, indent=2))
         except Exception as e:
             print(f"Error saving plan.json: {e}")
             
@@ -422,7 +426,7 @@ def _purge_file_data(filename, plan):
         del plan['files'][filename]
         
     # 3. Remove from history.csv
-    history_path = Path('history.csv')
+    history_path = DATA_DIR / 'history.csv'
     if history_path.exists():
         try:
             df = pd.read_csv(history_path)
@@ -433,18 +437,18 @@ def _purge_file_data(filename, plan):
 
 @app.route('/api/cleanup/archived', methods=['POST'])
 def cleanup_archived():
-    plan = get_data('plan.json')
+    plan = get_data(DATA_DIR / 'plan.json')
     files_to_purge = [name for name, info in plan.get('files', {}).items() if info.get('status') == 'archived']
     
     for filename in files_to_purge:
         _purge_file_data(filename, plan)
         
-    Path('plan.json').write_text(json.dumps(plan, indent=2))
+    (DATA_DIR / 'plan.json').write_text(json.dumps(plan, indent=2))
     return jsonify({"success": True, "count": len(files_to_purge)})
 
 @app.route('/api/rereview/errors', methods=['POST'])
 def rereview_errors():
-    plan = get_data('plan.json')
+    plan = get_data(DATA_DIR / 'plan.json')
     config = get_data('config.json')
     input_folder = Path(config.get('input_folder', './input'))
     
@@ -470,7 +474,7 @@ def rereview_errors():
                 _purge_file_data(name, plan)
                 count_purged += 1
             
-    Path('plan.json').write_text(json.dumps(plan, indent=2))
+    (DATA_DIR / 'plan.json').write_text(json.dumps(plan, indent=2))
     return jsonify({
         "success": True, 
         "reset_count": count_reset, 
@@ -488,7 +492,7 @@ def purge_master_report(filename):
         return jsonify({"success": False, "error": "Invalid master report filename"}), 400
     
     session_id = match.group(1)
-    plan = get_data('plan.json')
+    plan = get_data(DATA_DIR / 'plan.json')
     
     # 2. Identify files in this session
     files_in_session = []
@@ -550,12 +554,12 @@ def purge_master_report(filename):
     # stop showing up in the "Master Summaries" list because the list is derived
     # from files currently tracked in the plan.
         
-    Path('plan.json').write_text(json.dumps(plan, indent=2))
+    (DATA_DIR / 'plan.json').write_text(json.dumps(plan, indent=2))
     return jsonify({"success": True})
 
 if __name__ == '__main__':
     # Initialize the agent state to match logic on startup
-    state_file = Path('agent_state.json')
+    state_file = DATA_DIR / 'agent_state.json'
     if not state_file.exists():
         state_file.write_text(json.dumps({'state': 'running'}))
     else:
