@@ -1,0 +1,10 @@
+{
+  "session_start": 1778576113.0727549,
+  "processed": 1,
+  "tokens": {
+    "prompt": 1713,
+    "completion": 1186
+  },
+  "active_model": "openai/gemma-4-E4B-it-Q8_0.gguf",
+  "last_active": 1778576403.0770617
+}
