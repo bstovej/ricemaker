@@ -10,4 +10,6 @@ output/
 plan.json
 reviewed/
 stats.csv
+stats_backup.csv
+prompts.json
 90_System/
