@@ -1,0 +1,27 @@
+services:
+  ai-agent:
+    build: .
+    container_name: ricemaker
+    ports:
+      - "1688:1688"
+    volumes:
+      # Map host-level access points (adjust for your OS)
+      # macOS Example:
+      - /Volumes:/Volumes
+      - /Users/mengchowkang:/Users/mengchowkang
+      # Windows Example (uncomment and adjust):
+      # - C:/Users/your-user:/Users/your-user
+      # 
+      # Keep app state local to the project
+      - ./data:/app/data
+      - ./intermediate:/app/intermediate
+      - ./keys.json:/app/keys.json
+      - ./config.json:/app/config.json
+      - ./prompts.json:/app/prompts.json
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # Vital for connecting to host llama.cpp server
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OPENAI_API_KEY=sk-local-llama-cpp
+      - OPENAI_API_BASE=http://host.docker.internal:8080/v1
+    restart: unless-stopped

@@ -8,7 +8,7 @@
 Ricemaker operates on a **MapReduce** strategy to handle large volumes of data without overwhelming LLM context windows:
 * **The Map Phase:** The agent watches an `input` folder. When a file is added, it is normalized to Markdown and reviewed individually. These results are stored in an `intermediate` folder.
 * **The Reduce Phase:** A post-processor gathers all intermediate reviews and synthesizes them into a single `master_report.md`.
-* **State Persistence:** Every step is tracked in `plan.json` and `history.csv`. If the system restarts, it resumes from the last unfinished task rather than starting over.
+* **State Persistence:** Every step is tracked in `data/plan.json` and `data/history.csv`. If the system restarts, it resumes from the last unfinished task rather than starting over.
 
 ## 3. System Architecture
 
@@ -61,8 +61,8 @@ Ricemaker operates on a **MapReduce** strategy to handle large volumes of data w
 * `static/js/main.js`: Dashboard & Archive UI logic.
 * `templates/index.html`: Modern, dual-panel dashboard.
 * `config.json`: Master configuration for paths and models.
-* `plan.json`: Current session state memory.
-* `history.csv`: Permanent audit log of all processed files.
+* `data/plan.json`: Current session state memory.
+* `data/history.csv`: Permanent audit log of all processed files.
 
 ## 7. Outstanding Tasks (from Work Logs)
 - [ ] **Multimedia Integration:** Implement Whisper-based transcription for Audio/Video files.

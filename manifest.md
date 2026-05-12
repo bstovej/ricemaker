@@ -5,9 +5,10 @@ ricemaker/
 ├── config.json         # Folders, Model ID, and Budget
 ├── keys.json           # API Keys (Git-ignored)
 ├── prompts.json        # System and Post-Processor Prompts
-├── plan.json           # Persistent State Tracker
-├── stats.csv           # Performance & Cost Logs
-├── requirements.txt    # Python Dependencies
+├── data/               # Persistent state and logs
+│   ├── plan.json       # State Tracker
+│   ├── history.csv     # Audit Log
+│   └── stats.csv       # Token/Cost Metrics
 ├── Dockerfile          # Desktop-optimized Build
 ├── docker-compose.yaml # Local Desktop Orchestration
 ├── templates/
