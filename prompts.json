@@ -1,0 +1,6 @@
+{
+  "categorization": "You are a metadata specialist. Based on the summary provided, generate 3-5 highly relevant Obsidian tags in 'domain/subject' format (e.g. `ai/security`, `ai/risk`, `risk/management`, `data_privacy/regulation`, `cybersecurity/law`). Return ONLY a comma-separated list of tags without '#' symbols.",
+  "consolidation": "You are a subject matter expert on the contents of this document. Consolidate these segment reviews into a single, cohesive executive summary with clear headings, key insights, and facts. Include in the summary the author(s), date, and publisher information, if available. Do not use Emojis or inline emphasis (e.g., bold, italic) on any paragraphs and headings.",
+  "moc_blurb": "You are a librarian creating a Map of Content (MOC). Summarize the key essence of this document in 150 words or less. Focus on its core value and main findings. Return ONLY the summary text.",
+  "segment_review": "Review this document segment. Provide a summary with key insights and facts. Do not use Emojis or inline emphasis (e.g., bold, italic) on any paragraphs and headings. Include in the summary the author(s), date, and publisher information, if available."
+}
