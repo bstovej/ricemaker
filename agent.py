@@ -154,6 +154,28 @@ class RicemakerAgent:
         df = pd.DataFrame([new_entry])
         df.to_csv(stats_path, mode='a', index=False, header=not file_exists)
 
+    def safe_extract(self, file_path):
+        """Extracts text with fallbacks and size-based strategies to avoid OOM"""
+        file_path = Path(file_path)
+        
+        # 1. Strategy: For large PDFs, try a simpler extractor first to avoid MarkItDown's heavy dependencies
+        if file_path.suffix.lower() == '.pdf' and file_path.stat().st_size > 15 * 1024 * 1024:
+            logging.info(f"Large PDF detected ({file_path.stat().st_size / 1024 / 1024:.1f} MB). Using lightweight extractor first.")
+            try:
+                from pdfminer.high_level import extract_text
+                # Use a smaller maxpages or similar if needed, but for now just try basic extract_text
+                content = extract_text(str(file_path))
+                if content and len(content.strip()) > 500: # Ensure we got a meaningful amount of text
+                    logging.info(f"Successfully extracted {len(content)} chars from large PDF using pdfminer.")
+                    return content
+            except Exception as e:
+                logging.warning(f"Lightweight extraction failed for {file_path.name}: {e}")
+
+        # 2. Strategy: Fallback to MarkItDown
+        # We initialize it here to keep it local and potentially free memory sooner
+        md = MarkItDown()
+        return md.convert(str(file_path)).text_content
+
     def process_file(self, file_path):
         """Logic to extract content and call LLM with recursive chunking"""
         file_path = Path(file_path)
@@ -191,9 +213,9 @@ class RicemakerAgent:
         # 1. Extraction
         self.update_state(file_path.name, "Processing (Extracting Text)", session_id=self.session_id_str)
         start_time = time.time()
-        md = MarkItDown()
+        
         try:
-            content = md.convert(str(file_path)).text_content
+            content = self.safe_extract(file_path)
             extraction_time = time.time() - start_time
             
             # 2. Memory-efficient Chunking
@@ -601,7 +623,7 @@ if __name__ == "__main__":
         except Exception as e:
             logging.error(f"Error during startup scan of {input_path}: {e}")
 
-        # --- NEW: Auto-recover stuck pending files ---
+        # --- NEW: Auto-recover stuck pending or processing files ---
         try:
             plan = agent.load_json(DATA_DIR / 'plan.json')
             archive_folder = Path(agent.config.get('archive_folder', './reviewed'))
@@ -609,7 +631,13 @@ if __name__ == "__main__":
             legacy_archive = Path('./reviewed')
 
             for filename, info in plan.get('files', {}).items():
-                if info.get('status') == 'pending':
+                status = info.get('status', '')
+                if status == 'pending' or status.startswith('Processing'):
+                    if status.startswith('Processing'):
+                        logging.warning(f"File {filename} was stuck in {status}. Marking as error to prevent crash loops.")
+                        agent.update_state(filename, "error (crashed during processing)", session_id=agent.session_id_str)
+                        continue
+
                     orig_file = Path(input_path) / filename
                     if not orig_file.exists():
                         logging.info(f"Pending file {filename} missing from input. Attempting to recover...")

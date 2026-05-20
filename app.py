@@ -7,6 +7,18 @@ app = Flask(__name__)
 DATA_DIR = Path('data')
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
+# --- NEW: Zombie Process Reaper ---
+import signal
+def setup_reaper():
+    """Sets up a signal handler to reap child processes automatically"""
+    if os.name != 'nt':
+        try:
+            signal.signal(signal.SIGCHLD, lambda signum, frame: os.waitpid(-1, os.WNOHANG))
+        except Exception:
+            pass
+
+setup_reaper()
+
 def get_data(file):
     path = Path(file)
     return json.loads(path.read_text()) if path.exists() else {}
