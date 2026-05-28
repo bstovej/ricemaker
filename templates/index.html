@@ -466,7 +466,10 @@
                             <h2 style="color: var(--status-error);">Processing Errors</h2>
                             <span id="archive-error-count" style="font-size: 0.875rem; color: var(--text-secondary);">0 files</span>
                         </div>
-                        <button class="btn btn-warning" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;" onclick="window.rereviewAllErrors()"><i data-lucide="refresh-cw" style="width: 12px; height: 12px;"></i> Re-review All</button>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;" onclick="window.archiveAllErrors()">Archive Error Files</button>
+                            <button class="btn btn-warning" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;" onclick="window.rereviewAllErrors()"><i data-lucide="refresh-cw" style="width: 12px; height: 12px;"></i> Re-review All</button>
+                        </div>
                     </div>
                     <div class="table-container">
                         <table>

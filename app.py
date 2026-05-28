@@ -493,6 +493,44 @@ def rereview_errors():
         "purged_count": count_purged
     })
 
+@app.route('/api/archive/errors', methods=['POST'])
+def archive_errors():
+    plan = get_data('plan.json')
+    config = get_data('config.json')
+    input_folder = Path(config.get('input_folder', './input'))
+    archive_dir = Path(config.get('archive_folder', './reviewed'))
+    error_archive_dir = archive_dir / "Error Processing"
+    
+    if not error_archive_dir.exists():
+        error_archive_dir.mkdir(parents=True, exist_ok=True)
+        
+    count_archived = 0
+    errors = []
+
+    filenames = list(plan.get('files', {}).keys())
+    for name in filenames:
+        info = plan['files'][name]
+        if info.get('status', '').startswith('error'):
+            orig_file = input_folder / name
+            if orig_file.exists():
+                dest_file = error_archive_dir / name
+                try:
+                    shutil.move(str(orig_file), str(dest_file))
+                    _purge_file_data(name, plan)
+                    count_archived += 1
+                except Exception as e:
+                    errors.append({"file": name, "error": str(e)})
+            else:
+                # If file doesn't exist, purge from plan
+                _purge_file_data(name, plan)
+
+    Path('plan.json').write_text(json.dumps(plan, indent=2))
+    return jsonify({
+        "success": True,
+        "archived_count": count_archived,
+        "errors": errors
+    })
+
 @app.route('/api/master_report/purge/<path:filename>', methods=['POST'])
 def purge_master_report(filename):
     import urllib.parse

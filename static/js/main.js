@@ -731,6 +731,22 @@ window.rereviewAllErrors = async function() {
     } catch (err) { console.error(err); }
 };
 
+window.archiveAllErrors = async function() {
+    if (!confirm('Archive all failed files to the "Error Processing" folder?')) return;
+    try {
+        const res = await fetch('/api/archive/errors', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            let msg = `Successfully archived ${data.archived_count} failed files.`;
+            if (data.errors && data.errors.length > 0) {
+                msg += `\nEncountered errors with ${data.errors.length} files.`;
+            }
+            alert(msg);
+            refreshDashboard();
+        }
+    } catch (err) { console.error(err); }
+};
+
 window.purgeMasterReport = async function(filename) {
     if (!confirm(`CAUTION: This will delete the master report "${filename}", archive all its completed files, and permanently purge their intermediate data and plan entries. Proceed?`)) return;
     
