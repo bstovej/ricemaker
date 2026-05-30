@@ -223,6 +223,16 @@ class RicemakerAgent:
             if not content.strip():
                 raise ValueError("Extraction returned empty content. Unsupported or image-based file without OCR.")
                 
+            # --- NEW: Large Document Handling ---
+            # If document is extremely large, truncate it to focus on introductory sections
+            # 120,000 characters (approx. 30,000 tokens) captures the Preface, Foreword, Introduction, Abstract, and TOC.
+            LARGE_DOC_CHAR_LIMIT = 120000 
+            is_large_document = len(content) > LARGE_DOC_CHAR_LIMIT
+            
+            if is_large_document:
+                logging.info(f"Document is extremely large ({len(content)} chars). Truncating to first {LARGE_DOC_CHAR_LIMIT} chars to focus on Preface, Foreword, Introduction, Abstract, and TOC.")
+                content = content[:LARGE_DOC_CHAR_LIMIT]
+                
             MAX_CHARS = 24000 
             num_chunks = (len(content) + MAX_CHARS - 1) // MAX_CHARS
             
@@ -474,6 +484,7 @@ class RicemakerAgent:
             "status": status, 
             "timestamp": timestamp if timestamp is not None else time.time(),
             "model": self.active_model,
+            "tags": tags,
             "moc_blurb": moc_blurb,
             "error_msg": error_msg,
             "session_id": session_id or plan.get('files', {}).get(filename, {}).get('session_id')

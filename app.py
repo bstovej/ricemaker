@@ -370,6 +370,82 @@ def rereview(filename):
         
     return jsonify({"success": True})
 
+def get_best_archive_folder(tags, archive_dir):
+    """
+    Finds the best sub-folder in archive_dir based on tags.
+    If no match found, returns a new folder name based on the primary tag.
+    """
+    if not tags:
+        return "General"
+        
+    # 1. List existing sub-folders
+    existing_subfolders = []
+    if archive_dir.exists():
+        existing_subfolders = [d.name for d in archive_dir.iterdir() if d.is_dir()]
+    
+    # 2. Try to find a match among existing sub-folders
+    for tag in tags:
+        tag_lower = tag.lower()
+        # Direct match
+        for sub in existing_subfolders:
+            if tag_lower == sub.lower():
+                return sub
+        
+        # Partial match for "domain/subject" -> "subject"
+        if '/' in tag:
+            subject = tag.split('/')[-1].lower()
+            for sub in existing_subfolders:
+                if subject == sub.lower():
+                    return sub
+                    
+    # 3. No match found, create a new folder name based on the first tag
+    primary_tag = tags[0]
+    # Use "Subject" part of "Domain/Subject" if possible, otherwise use full tag
+    new_folder = primary_tag.split('/')[-1] if '/' in primary_tag else primary_tag
+    # Capitalize for aesthetics if it was all lowercase
+    if new_folder.islower():
+        new_folder = new_folder.title()
+    elif '/' in primary_tag and new_folder == primary_tag.split('/')[-1]:
+        # If it was domain/subject, and we took subject, title case it
+        new_folder = new_folder.title()
+        
+    return new_folder
+
+def _move_file_to_archive(filename, input_dir, archive_dir, output_dir, plan):
+    """Internal helper to move a file and update its report/plan status"""
+    orig_file = input_dir / filename
+    if not orig_file.exists():
+        return False, "file_not_found"
+        
+    file_info = plan.get('files', {}).get(filename, {})
+    tags = file_info.get('tags', [])
+    
+    subfolder_name = get_best_archive_folder(tags, archive_dir)
+    target_dir = archive_dir / subfolder_name
+    if not target_dir.exists():
+        target_dir.mkdir(parents=True, exist_ok=True)
+        
+    dest_file = target_dir / filename
+    report_path = output_dir / f"{filename}.md"
+    
+    try:
+        shutil.move(str(orig_file), str(dest_file))
+        
+        # Update Report Frontmatter
+        if report_path.exists():
+            content = report_path.read_text(encoding='utf-8')
+            # Update source path to new absolute path
+            new_content = re.sub(r'(^source:\s*").*?(")', f'\\1{dest_file.absolute()}\\2', content, flags=re.MULTILINE)
+            report_path.write_text(new_content, encoding='utf-8')
+            
+        # Update Plan status
+        if filename in plan.get('files', {}):
+            plan['files'][filename]['status'] = 'archived'
+            
+        return True, None
+    except Exception as e:
+        return False, str(e)
+
 @app.route('/api/files/move', methods=['POST'])
 def move_files():
     data = request.json or {}
@@ -391,29 +467,14 @@ def move_files():
     errors = []
     
     for filename in files_to_move:
-        orig_file = input_dir / filename
-        if not orig_file.exists():
-            if target_files:
-                return jsonify({"success": False, "error": "file_not_found", "message": f"{filename} not found in input directory."})
-            continue
-            
-        report_path = output_dir / f"{filename}.md"
-        
-        dest_file = archive_dir / filename
-        try:
-            shutil.move(str(orig_file), str(dest_file))
+        success, err = _move_file_to_archive(filename, input_dir, archive_dir, output_dir, plan)
+        if success:
             moved.append(filename)
-            
-            if report_path.exists():
-                content = report_path.read_text(encoding='utf-8')
-                new_content = re.sub(r'(^source:\s*").*?(")', f'\\1{dest_file.absolute()}\\2', content, flags=re.MULTILINE)
-                report_path.write_text(new_content, encoding='utf-8')
-                
-            if filename in plan.get('files', {}):
-                plan['files'][filename]['status'] = 'archived'
-                
-        except Exception as e:
-            errors.append({"file": filename, "error": str(e)})
+        else:
+            if err == "file_not_found" and target_files:
+                return jsonify({"success": False, "error": "file_not_found", "message": f"{filename} not found in input directory."})
+            if err != "file_not_found":
+                errors.append({"file": filename, "error": err})
             
     if moved:
         try:
@@ -574,26 +635,8 @@ def purge_master_report(filename):
         pass # We will handle this in the next step by refactoring move_files
         
     # Trigger archiving for files_to_archive
-    # (Re-using logic from move_files internally)
-    config = get_data('config.json')
-    input_dir = Path(config.get('input_folder', './input'))
-    archive_dir = Path(config.get('archive_folder', './reviewed'))
-    output_dir = Path(config.get('output_folder', './output'))
-    
     for name in files_to_archive:
-        orig_file = input_dir / name
-        if not orig_file.exists(): continue
-        
-        report_path = output_dir / f"{name}.md"
-        dest_file = archive_dir / name
-        
-        try:
-            shutil.move(str(orig_file), str(dest_file))
-            if report_path.exists():
-                content = report_path.read_text(encoding='utf-8')
-                new_content = re.sub(r'(^source:\s*").*?(")', f'\\1{dest_file.absolute()}\\2', content, flags=re.MULTILINE)
-                report_path.write_text(new_content, encoding='utf-8')
-        except: pass
+        _move_file_to_archive(name, input_dir, archive_dir, output_dir, plan)
 
     # 5. Purge tracking data and intermediate files for all (now) archived files in session
     for name in files_to_purge:
