@@ -71,8 +71,8 @@ Ricemaker operates on a **MapReduce** strategy to handle large volumes of data w
 - [X] **Prompt Template:** Allow for the agent prompt to be configurable based on a template file specified in `config.json`. Restart review after changes are saved.
 - [X] **File Archives Re-review:** Allow for completed files in the file archives to be reviewed again.
 - [X] **Agent Controls:** Add a dashboard button with four states: start, pause, continue, and stop.
-- [X] **Dashboard File Management:** Add a dashboard button to move completed files to a flat archive folder.
+- [X] **Dashboard File Management:** Add a dashboard button to move completed files to a tag-based archive folder.
 - [X] **Agent Categorization:** Agent must add a configurable category tag (from `config.json`) to the YAML during analysis.
-- [X] **Agent Traceability:** Agent must add the new file location in the YAML after moving the original file to the flat archive.
+- [X] **Agent Traceability:** Agent must add the new file location in the YAML after moving the original file to the archive subfolder.
 - [ ] **Search & Filter:** Add search functionality to the File Archive panels.
 - [X] **Prioritized Review:** Prioritize the review of files that are newest (based on date modified).

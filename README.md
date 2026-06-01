@@ -41,7 +41,7 @@ The system relies on JSON configuration files that are ignored by Git for securi
 2. **Edit `keys.json`** with your API keys and endpoint configuration.
 3. **Edit `config.json`** to define your local folder paths (absolute paths recommended), default model, and batch category.
 
-> **Note on Archiving:** When files are archived, they are moved to a flat structure inside the `archive_folder` for easier retrieval and searching.
+> **Note on Archiving:** When files are archived, they are moved to tag-based subfolders inside the `archive_folder` for easier retrieval and structured organization.
 
 > **⚠️ Note on Windows Paths:** In `config.json`, use forward slashes (e.g., `C:/Users/name/input`) or escaped backslashes (`C:\\Users\\name\\input`).
 
