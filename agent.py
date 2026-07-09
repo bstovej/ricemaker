@@ -386,8 +386,8 @@ class RicemakerAgent:
             self._update_session_file()
             logging.info(f"Successfully processed {file_path.name}")
             
-            # 5. Generate Global Master Summary
-            self.generate_master_report()
+            # Master report feature has been retired
+            # self.generate_master_report()
             
         except Exception as e:
             logging.error(f"Error processing {file_path.name}: {e}")
@@ -478,10 +478,12 @@ class RicemakerAgent:
         config_category = self.config.get('category', 'Resources')
         primary_category = config_category
         
-        # Clean up summary for the frontmatter (single line, escaped quotes)
-        clean_summary = summary_text.split('\n')[0].replace('"', '\\"').strip()
-        if len(clean_summary) > 150:
-            clean_summary = clean_summary[:147] + "..."
+        # Clean up summary for the frontmatter (single line, escaped quotes, no newlines)
+        clean_summary = summary_text.replace('\n', ' ').replace('\r', ' ').replace('"', '\\"').strip()
+        while '  ' in clean_summary:
+            clean_summary = clean_summary.replace('  ', ' ')
+        if len(clean_summary) > 250:
+            clean_summary = clean_summary[:247] + "..."
 
         frontmatter = [
             "---",
@@ -519,7 +521,9 @@ class RicemakerAgent:
         if result:
             # --- FIXED: Final reports go to output/ with Frontmatter ---
             os.makedirs(self.config['output_folder'], exist_ok=True)
-            frontmatter = self._generate_frontmatter(filename, result, tags=tags)
+            # Use moc_blurb if provided as the YAML summary
+            summary_text = moc_blurb if moc_blurb else result
+            frontmatter = self._generate_frontmatter(filename, summary_text, tags=tags)
             (Path(self.config['output_folder']) / f"{filename}.md").write_text(frontmatter + result, encoding='utf-8')
 
     def queue_file(self, file_path):

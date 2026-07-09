@@ -505,57 +505,64 @@ async function refreshDashboard() {
             document.getElementById('stat-session-tokens').innerText = tokenStr;
         }
 
-        // Master Summary Panel Refresh
+        // Latest Completed Summary Panel & Errors Panel Refresh
         if (currentView === 'dashboard') {
-            const summaryUrl = currentMasterReportSelection ? `/api/summary/${encodeURIComponent(currentMasterReportSelection)}` : '/api/summary';
-            const summaryRes = await fetch(summaryUrl);
-            const summary = await summaryRes.json();
-            const summaryContent = document.getElementById('summary-content');
-            const reportsListBody = document.getElementById('master-reports-list');
-            const selectEl = document.getElementById('master-report-select');
+            const completedReports = mergedList.filter(f => f.status === 'completed' || f.status === 'archived');
+            const latestCompleted = completedReports.length > 0 ? completedReports[0] : null;
 
-            // 1. Update Dropdown and Table List
-            if (summary.reports) {
-                if (selectEl) {
-                    const currentValue = selectEl.value;
-                    selectEl.innerHTML = '<option value="">Latest</option>';
-                    summary.reports.forEach(r => {
-                        const option = document.createElement('option');
-                        option.value = r.name;
-                        option.innerText = r.name;
-                        selectEl.appendChild(option);
-                    });
-                    selectEl.value = currentValue;
-                }
+            const latestSummaryTitle = document.getElementById('latest-summary-title');
+            const latestSummaryContent = document.getElementById('latest-summary-content');
 
-                if (reportsListBody) {
-                    reportsListBody.innerHTML = "";
-                    summary.reports.forEach(r => {
-                        const dateStr = new Date(r.modified * 1000).toLocaleString();
-                        const isSelected = (currentMasterReportSelection === r.name) || (!currentMasterReportSelection && r.name === summary.filename);
-                        
-                        reportsListBody.innerHTML += `
-                            <tr style="background-color: ${isSelected ? 'rgba(59, 130, 246, 0.1)' : 'transparent'};">
-                                <td onclick="window.loadSpecificMasterReport('${r.name}')" style="cursor: pointer; padding: 0.4rem 1rem; color: ${isSelected ? 'var(--accent-primary)' : 'var(--text-primary)'};">
-                                    <i data-lucide="file-text" style="width: 12px; height: 12px; vertical-align: middle; margin-right: 0.5rem;"></i>
-                                    ${r.name}
-                                </td>
-                                <td style="padding: 0.4rem 1rem; text-align: right;">
-                                    <span style="color: var(--text-secondary); font-size: 0.7rem; margin-right: 0.5rem;">${dateStr}</span>
-                                    <button onclick="event.stopPropagation(); window.purgeMasterReport('${r.name}')" class="btn btn-outline" style="padding: 0.1rem 0.3rem; font-size: 0.6rem; color: var(--status-error); border-color: rgba(239, 68, 68, 0.2);"><i data-lucide="trash-2" style="width: 10px; height: 10px;"></i> Purge</button>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
+            if (latestSummaryContent) {
+                if (latestCompleted) {
+                    if (latestSummaryTitle) {
+                        latestSummaryTitle.innerText = latestCompleted.name;
+                        latestSummaryTitle.style.display = 'block';
+                    }
+                    
+                    try {
+                        const reportRes = await fetch(`/api/report/${encodeURIComponent(latestCompleted.name)}`);
+                        const reportData = await reportRes.json();
+                        if (reportData.content) {
+                            renderMarkdownWithYaml(latestSummaryContent, reportData.content);
+                        } else {
+                            latestSummaryContent.innerHTML = `<p style="color: var(--text-secondary);">Error loading summary content.</p>`;
+                        }
+                    } catch (e) {
+                        console.error("Error loading latest summary", e);
+                        latestSummaryContent.innerHTML = `<p style="color: var(--text-secondary);">Error loading summary content.</p>`;
+                    }
+                } else {
+                    if (latestSummaryTitle) {
+                        latestSummaryTitle.style.display = 'none';
+                    }
+                    latestSummaryContent.innerHTML = `<p style="color: var(--text-secondary);">No completed reports in this session yet.</p>`;
                 }
             }
 
-            // 2. Update Display Content
-            if (summaryContent && summary.content && summary.filename !== lastMasterReportFilename) {
-                lastMasterReportFilename = summary.filename;
-                if (summary.content !== "No master report generated yet.") {
-                    renderMarkdownWithYaml(summaryContent, summary.content);
+            // Populate dashboard errors
+            const dashboardErrorBody = document.getElementById('dashboard-error-body');
+            const dashboardErrorCountEl = document.getElementById('dashboard-error-count');
+            
+            if (dashboardErrorBody) {
+                const errorFiles = mergedList.filter(f => f.status.startsWith('error'));
+                let dashboardErrorHtml = '';
+                
+                errorFiles.forEach(f => {
+                    const dateStr = new Date(f.timestamp * 1000).toLocaleString();
+                    const isSelected = selectedFile === f.name;
+                    
+                    dashboardErrorHtml += `
+                        <tr onclick="viewReport('${f.name}')" style="cursor: pointer; background-color: ${isSelected ? 'var(--bg-tertiary)' : 'transparent'};" class="file-row" id="row-${f.name}">
+                            <td style="font-family: 'JetBrains Mono', monospace; width: 70%; padding: 0.75rem 1rem;">${f.name}</td>
+                            <td style="color: var(--text-secondary); width: 30%; padding: 0.75rem 1rem;">${dateStr}</td>
+                        </tr>
+                    `;
+                });
+                
+                dashboardErrorBody.innerHTML = dashboardErrorHtml || '<tr><td colspan="2" style="color: var(--text-secondary); padding: 1.5rem; text-align: center;">No processing errors.</td></tr>';
+                if (dashboardErrorCountEl) {
+                    dashboardErrorCountEl.innerText = `${errorFiles.length} file${errorFiles.length !== 1 ? 's' : ''}`;
                 }
             }
         }
