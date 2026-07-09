@@ -1,4 +1,4 @@
-# Project Requirements: Ricemaker
+# Project Requirements: Ricemaker (v2.1, 2026-07-09)
 ## 1. Executive Summary
 **Project Name:** Ricemaker  
 **Purpose:** An automated, durable AI agent designed to "process" raw local files (text, documents, audio, video) into structured AI reviews and consolidated executive summaries.  

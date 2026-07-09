@@ -1,5 +1,6 @@
-# 🌾 Ricemaker
+# Ricemaker (v2.1, 2026-07-09)
 **Durable AI File Reviewer Agent for Mac & Windows (Desktop Edition)**
+
 
 Ricemaker is a high-reliability "MapReduce" agent that transforms raw local files (PDFs, Office Docs, Audio, Video) into structured AI reviews. Optimized for local inference with **llama.cpp** and **LiteLLM**, it bridges your local desktop files directly to modern LLMs without sacrificing privacy.
 
@@ -101,3 +102,13 @@ Ricemaker maintains a clean record of its operations:
 - **Reliability:** Built for high-volume batch processing.
 - **Privacy:** Content stays local when using local models (e.g., `openai/llama-cpp`).
 - **Support:** Handles PDF, DOCX, XLSX, PPTX, TXT, MD, and more via Microsoft `MarkItDown`.
+
+---
+
+## Changelog
+
+### v2.1 (2026-07-09)
+- Added support for switching between llama.cpp server and Ollama local LLM models via `llm_provider` configuration.
+- Configured dedicated local endpoint bases (`LLAMA_CPP_API_BASE` and `OLLAMA_API_BASE`) in `keys.json`.
+- Updated background agent routing logic to dynamically prepend model prefixes and map endpoints.
+- Updated documentation across prd.md and README.md.
