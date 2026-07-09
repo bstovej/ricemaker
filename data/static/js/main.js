@@ -222,7 +222,7 @@ async function viewReport(filename) {
         
         const contentContainer = (currentView === 'archive') ? 
             document.getElementById('archive-summary-content') : 
-            document.getElementById('modal-content');
+            document.getElementById('latest-summary-content');
 
         if (res.ok && data.content) {
             if (contentContainer) renderMarkdownWithYaml(contentContainer, data.content);
@@ -245,13 +245,11 @@ async function viewReport(filename) {
             if (btnArchive) btnArchive.style.display = 'inline-flex';
             if (btnReReview) btnReReview.style.display = 'inline-flex';
         } else {
-            // Dashboard Modal view
-            const modal = document.getElementById('report-modal');
-            const modalTitle = document.getElementById('modal-title');
-            if (modal) {
-                modalTitle.innerText = `File Report: ${filename}`;
-                modal.style.display = 'flex';
-                if (typeof lucide !== 'undefined') lucide.createIcons();
+            // Dashboard view: update title display and ensure it's visible
+            const latestSummaryTitle = document.getElementById('latest-summary-title');
+            if (latestSummaryTitle) {
+                latestSummaryTitle.innerText = filename;
+                latestSummaryTitle.style.display = 'block';
             }
         }
     } catch (err) {
@@ -478,6 +476,11 @@ async function refreshDashboard() {
         // The "Queue Size" header should show items that are still to be done
         const truePendingCount = mergedList.filter(f => !f.status.startsWith('error') && f.status !== 'archived' && (f.status === 'pending' || f.status.includes('Processing'))).length;
         document.getElementById('stat-total').innerText = truePendingCount;
+
+        // Calculate and display total processing errors
+        const totalErrorCount = mergedList.filter(f => f.status.startsWith('error')).length;
+        const statTotalErrorsEl = document.getElementById('stat-total-errors');
+        if (statTotalErrorsEl) statTotalErrorsEl.innerText = totalErrorCount;
         
         // Show cleanup button if there are missing files
         const cleanupBtn = document.getElementById('btn-cleanup-missing');
@@ -509,19 +512,22 @@ async function refreshDashboard() {
         if (currentView === 'dashboard') {
             const completedReports = mergedList.filter(f => f.status === 'completed' || f.status === 'archived');
             const latestCompleted = completedReports.length > 0 ? completedReports[0] : null;
+            
+            // Prefer the user-selected file, otherwise fallback to the latest completed report
+            const activeDisplayFile = selectedFile || (latestCompleted ? latestCompleted.name : null);
 
             const latestSummaryTitle = document.getElementById('latest-summary-title');
             const latestSummaryContent = document.getElementById('latest-summary-content');
 
             if (latestSummaryContent) {
-                if (latestCompleted) {
+                if (activeDisplayFile) {
                     if (latestSummaryTitle) {
-                        latestSummaryTitle.innerText = latestCompleted.name;
+                        latestSummaryTitle.innerText = activeDisplayFile;
                         latestSummaryTitle.style.display = 'block';
                     }
                     
                     try {
-                        const reportRes = await fetch(`/api/report/${encodeURIComponent(latestCompleted.name)}`);
+                        const reportRes = await fetch(`/api/report/${encodeURIComponent(activeDisplayFile)}`);
                         const reportData = await reportRes.json();
                         if (reportData.content) {
                             renderMarkdownWithYaml(latestSummaryContent, reportData.content);
