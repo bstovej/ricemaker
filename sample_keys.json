@@ -1,5 +1,6 @@
 {
   "LLAMA_CPP_API_BASE": "http://host.docker.internal:8080/v1",
+  "OLLAMA_API_BASE": "http://host.docker.internal:11434",
   "OPENAI_API_KEY": "sk-...",
   "ANTHROPIC_API_KEY": "sk-...",
   "GOOGLE_API_KEY": "..."

@@ -30,8 +30,9 @@ class RicemakerAgent:
         self.active_model = self.config.get('model_name', 'openai/local-model')
         self._update_session_file()
         
-        # Point to llama.cpp from inside Docker
+        # Point to llama.cpp/Ollama from inside Docker
         self.llama_cpp_base = self.keys.get("LLAMA_CPP_API_BASE", "http://host.docker.internal:8080/v1")
+        self.ollama_base = self.keys.get("OLLAMA_API_BASE", "http://host.docker.internal:11434")
         
     def load_json(self, path):
         return json.loads(Path(path).read_text()) if Path(path).exists() else {}
@@ -69,13 +70,37 @@ class RicemakerAgent:
                 
             try:
                 logging.info(f"Attempt {attempt+1}: Calling {curr_model}...")
+                
+                llm_provider = self.config.get('llm_provider', 'llama_cpp').lower()
+                api_base = None
+                litellm_model = curr_model
+                
+                # Check if it's a cloud provider (e.g. google/gemini, anthropic/claude, openai/gpt)
+                is_cloud = curr_model.startswith(("google/", "gemini/", "anthropic/", "claude/")) or \
+                           (curr_model.startswith("openai/") and not curr_model.startswith("openai/local"))
+                
+                if not is_cloud:
+                    if llm_provider == 'ollama':
+                        if not litellm_model.startswith('ollama/'):
+                            litellm_model = f"ollama/{litellm_model}"
+                        api_base = self.ollama_base
+                    elif llm_provider == 'llama_cpp':
+                        if not litellm_model.startswith('openai/'):
+                            litellm_model = f"openai/{litellm_model}"
+                        api_base = self.llama_cpp_base
+                else:
+                    if curr_model.startswith("openai/"):
+                        api_base = self.llama_cpp_base
+                
+                logging.info(f"Using LiteLLM model: {litellm_model} at api_base: {api_base}")
+                
                 response = litellm.completion(
-                    model=curr_model,
+                    model=litellm_model,
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_content}
                     ],
-                    api_base=self.llama_cpp_base if curr_model.startswith("openai/") else None,
+                    api_base=api_base,
                     timeout=300
                 )
                 

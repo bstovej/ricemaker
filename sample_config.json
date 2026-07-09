@@ -5,6 +5,7 @@
   "input_folder": "./input",
   "intermediate_folder": "./intermediate",
   "max_budget_usd": 100,
+  "llm_provider": "ollama",
   "model_name": "your-model-name",
   "output_folder": "./output",
   "prompts_file": "prompts.json",
