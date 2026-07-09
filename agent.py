@@ -21,6 +21,7 @@ class RicemakerAgent:
         self.prompts = self.load_json(self.config.get('prompts_file', 'prompts.json'))
         
         self.file_queue = queue.PriorityQueue()
+        self.queued_files = set()
 
         # Session Stats
         self.session_start = time.time()
@@ -531,6 +532,10 @@ class RicemakerAgent:
         file_path = Path(file_path)
         if file_path.name.startswith('.'): return
         
+        file_abs = str(file_path.absolute())
+        if file_abs in self.queued_files:
+            return
+            
         try:
             mtime = file_path.stat().st_mtime
             priority = -mtime
@@ -545,7 +550,8 @@ class RicemakerAgent:
                 # Strong penalty: positive number makes it lowest priority
                 priority += 1000000000
                 
-            self.file_queue.put((priority, str(file_path.absolute())))
+            self.queued_files.add(file_abs)
+            self.file_queue.put((priority, file_abs))
             logging.info(f"Queued {file_path.name}")
         except Exception as e:
             logging.error(f"Error queuing {file_path.name}: {e}")
@@ -554,12 +560,39 @@ class RicemakerAgent:
         """Background thread to process files from the queue based on agent state."""
         logging.info("Agent worker thread started.")
         last_heartbeat = 0
+        last_scan = 0
         
         while True:
             # Heartbeat every 10 minutes
             if time.time() - last_heartbeat > 600:
                 logging.info("Agent Heartbeat: Idle and waiting for files...")
                 last_heartbeat = time.time()
+
+            # Periodic Scan of input folder every 5 seconds (to detect files watchdog missed, e.g. Docker mounts)
+            if time.time() - last_scan > 5:
+                last_scan = time.time()
+                input_path = self.config.get('input_folder', './input')
+                try:
+                    if os.path.isdir(input_path):
+                        completed_paths = self.load_history()
+                        plan = self.load_json(DATA_DIR / 'plan.json')
+                        
+                        for f in os.listdir(input_path):
+                            f_path = Path(input_path) / f
+                            if f_path.is_file() and not f.startswith('.'):
+                                f_abs = str(f_path.absolute())
+                                
+                                # Only queue if not already in queue
+                                if f_abs not in self.queued_files:
+                                    # And not already successfully completed or archived
+                                    plan_status = plan.get('files', {}).get(f, {}).get('status', '')
+                                    is_done = f_abs in completed_paths or plan_status in ('completed', 'archived')
+                                    
+                                    # Unless it's explicitly marked as 'pending' (like when requesting re-review)
+                                    if not is_done or plan_status == 'pending':
+                                        self.queue_file(f_path)
+                except Exception as e:
+                    logging.error(f"Error during periodic scan of {input_path}: {e}")
 
             # Check agent state
             state_file = DATA_DIR / 'agent_state.json'
@@ -584,6 +617,8 @@ class RicemakerAgent:
             try:
                 # Use timeout so we can periodically check state
                 priority, file_path_str = self.file_queue.get(timeout=2)
+                if file_path_str in self.queued_files:
+                    self.queued_files.remove(file_path_str)
                 
                 # Check if file still exists before processing
                 if not Path(file_path_str).exists():
