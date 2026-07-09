@@ -2,7 +2,7 @@ from flask import Flask, jsonify, render_template, request
 from pathlib import Path
 import json, subprocess, shutil, os, time, re
 import pandas as pd
-app = Flask(__name__)
+app = Flask(__name__, static_folder='data/static')
 
 DATA_DIR = Path('data')
 DATA_DIR.mkdir(parents=True, exist_ok=True)
