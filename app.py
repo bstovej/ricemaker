@@ -3,15 +3,17 @@ from pathlib import Path
 import json, subprocess, shutil, os, time, re, sys
 import pandas as pd
 
-# Ensure config.json and keys.json are present and are files (prevent Docker from creating folders)
+# Check config.json and keys.json presence and log warnings, but don't exit so Flask can serve the error UI
+config_warnings = []
 for filename, sample_name in [('config.json', 'sample_config.json'), ('keys.json', 'sample_keys.json')]:
     path = Path(filename)
     if not path.exists():
-        print(f"CRITICAL ERROR: {filename} is missing! Please create it by copying the reference {sample_name} file.", file=sys.stderr)
-        sys.exit(1)
-    if path.is_dir():
-        print(f"CRITICAL ERROR: {filename} exists as a directory! Please remove it and create a proper JSON file referencing {sample_name}.", file=sys.stderr)
-        sys.exit(1)
+        config_warnings.append(f"WARNING: {filename} is missing! Use {sample_name} as reference.")
+    elif path.is_dir():
+        config_warnings.append(f"WARNING: {filename} exists as a directory! Remove it and create a file using {sample_name} as reference.")
+
+for warning in config_warnings:
+    print(warning, file=sys.stderr)
 
 app = Flask(__name__, static_folder='data/static')
 
@@ -42,6 +44,12 @@ agent_process = None
 
 def start_agent():
     global agent_process
+    # Verify config/keys are files before starting the agent process
+    for filename in ('config.json', 'keys.json'):
+        path = Path(filename)
+        if not path.exists() or path.is_dir():
+            return
+            
     if agent_process is None or agent_process.poll() is not None:
         agent_process = subprocess.Popen(["python", "agent.py"])
 
@@ -121,10 +129,79 @@ def status():
     """Returns the current processing plan for the dashboard"""
     return jsonify(get_cached_data('plan.json', lambda: get_data(DATA_DIR / 'plan.json'), ttl=3))
 
+def check_llm_connection():
+    try:
+        config = get_data('config.json')
+        keys = get_data('keys.json')
+        if not config or not keys:
+            return None
+            
+        provider = config.get('llm_provider', 'llama_cpp')
+        
+        if provider == 'llama_cpp':
+            base_url = keys.get('LLAMA_CPP_API_BASE', 'http://host.docker.internal:8080/v1')
+            import requests
+            resp = requests.get(f"{base_url}/models", timeout=2)
+            if resp.status_code == 200:
+                return None
+            return f"LLM Connection Error: llama.cpp server at {base_url} returned status code {resp.status_code}."
+        elif provider == 'ollama':
+            base_url = keys.get('OLLAMA_API_BASE', 'http://host.docker.internal:11434')
+            import requests
+            resp = requests.get(base_url, timeout=2)
+            if resp.status_code in (200, 404):
+                return None
+            return f"LLM Connection Error: Ollama server at {base_url} returned status code {resp.status_code}."
+    except Exception as e:
+        return f"LLM Connection Error: Failed to connect to local LLM server. Please check if your LLM server/Ollama is running. Details: {e}"
+    return None
+
 @app.route('/api/session')
 def session_stats():
-    """Returns current session progress and token counts"""
-    return jsonify(get_cached_data('session_stats.json', lambda: get_data(DATA_DIR / 'session_stats.json'), ttl=3))
+    """Returns current session progress, token counts, and connection/configuration errors"""
+    # Force fresh read of state/session rather than caching forever if there are errors
+    session_data = get_data(DATA_DIR / 'session_stats.json')
+    if not session_data:
+        session_data = {
+            "session_start": time.time(),
+            "processed": 0,
+            "tokens": {"prompt": 0, "completion": 0},
+            "active_model": "Syncing...",
+            "last_active": time.time()
+        }
+        
+    # Check config/keys presence first
+    config_errors = []
+    for filename, sample_name in [('config.json', 'sample_config.json'), ('keys.json', 'sample_keys.json')]:
+        path = Path(filename)
+        if not path.exists():
+            config_errors.append(f"CRITICAL ERROR: {filename} is missing! Please create it by copying the reference {sample_name} file.")
+        elif path.is_dir():
+            config_errors.append(f"CRITICAL ERROR: {filename} exists as a directory! Please remove it and create a proper JSON file referencing {sample_name}.")
+            
+    if config_errors:
+        session_data['status_message'] = " | ".join(config_errors)
+        session_data['status_type'] = 'error'
+    else:
+        llm_error = check_llm_connection()
+        if llm_error:
+            session_data['status_message'] = llm_error
+            session_data['status_type'] = 'error'
+        else:
+            plan = get_data(DATA_DIR / 'plan.json')
+            files = plan.get('files', {})
+            total_files = len(files)
+            completed_files = sum(1 for f, info in files.items() if info.get('status') in ('completed', 'archived'))
+            
+            if total_files > 0:
+                pct = int((completed_files / total_files) * 100)
+                session_data['status_message'] = f"Ricemaking in progress - {pct}% completed"
+                session_data['status_type'] = 'progress'
+            else:
+                session_data['status_message'] = "Ricemaking in progress - 0% completed"
+                session_data['status_type'] = 'progress'
+                
+    return jsonify(session_data)
 
 @app.route('/api/files')
 def list_files():

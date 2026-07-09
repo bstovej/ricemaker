@@ -506,6 +506,33 @@ async function refreshDashboard() {
                 tokenStr = (totalTokens / 1000).toFixed(1) + 'k';
             }
             document.getElementById('stat-session-tokens').innerText = tokenStr;
+            
+            // Render the connection & status banner message
+            const bannerEl = document.getElementById('status-message-banner');
+            if (bannerEl) {
+                const bannerText = document.getElementById('status-banner-text');
+                const bannerIcon = document.getElementById('status-banner-icon');
+                
+                if (sessionData.status_message) {
+                    bannerEl.style.display = 'flex';
+                    if (bannerText) bannerText.innerText = sessionData.status_message;
+                    
+                    if (sessionData.status_type === 'error') {
+                        bannerEl.style.backgroundColor = 'rgba(239, 68, 68, 0.08)';
+                        bannerEl.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                        bannerEl.style.color = 'var(--status-error)';
+                        if (bannerIcon) bannerIcon.setAttribute('data-lucide', 'alert-circle');
+                    } else {
+                        bannerEl.style.backgroundColor = 'rgba(74, 222, 128, 0.08)';
+                        bannerEl.style.borderColor = 'rgba(74, 222, 128, 0.3)';
+                        bannerEl.style.color = 'var(--accent-primary)';
+                        if (bannerIcon) bannerIcon.setAttribute('data-lucide', 'activity');
+                    }
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                } else {
+                    bannerEl.style.display = 'none';
+                }
+            }
         }
 
         // Latest Completed Summary Panel & Errors Panel Refresh
