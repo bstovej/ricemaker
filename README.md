@@ -38,15 +38,15 @@ The system relies on JSON configuration files that are ignored by Git for securi
    cp sample_keys.json keys.json
    cp sample_config.json config.json
    ```
-2. **Edit `keys.json`** with your API keys and endpoint configuration.
-3. **Edit `config.json`** to define your local folder paths (absolute paths recommended), default model, and batch category.
+2. **Edit `keys.json`** with your API keys and local backend bases (e.g., `LLAMA_CPP_API_BASE`, `OLLAMA_API_BASE`).
+3. **Edit `config.json`** to define your local folder paths (absolute paths recommended), selected `llm_provider` (`llama_cpp` or `ollama`), model names, and batch category.
 
 > **Note on Archiving:** When files are archived, they are moved to tag-based subfolders inside the `archive_folder` for easier retrieval and structured organization.
 
-> **⚠️ Note on Windows Paths:** In `config.json`, use forward slashes (e.g., `C:/Users/name/input`) or escaped backslashes (`C:\\Users\\name\\input`).
+> **Note on Windows Paths:** In `config.json`, use forward slashes (e.g., `C:/Users/name/input`) or escaped backslashes (`C:\\Users\\name\\input`).
 
 ### 3. Docker Deployment
-Ricemaker is designed to run in Docker while bridging to your host machine's llama.cpp instance.
+Ricemaker is designed to run in Docker while bridging to your host machine's local LLM instances.
 
 #### Prepare Docker Configuration
 1. **Copy the sample:**
@@ -79,7 +79,7 @@ docker-compose down
 ```
 
 ### 4. Hardware Acceleration (Local LLMs)
-To use your local GPU for llama.cpp, ensure **llama.cpp** is running on your **Host OS** (not inside Docker). The `docker-compose.yaml` file uses `host.docker.internal` to bridge the container's requests back to your machine's hardware.
+To use your local GPU for llama.cpp or Ollama, ensure the corresponding service is running on your **Host OS** (not inside Docker). The `docker-compose.yaml` file uses `host.docker.internal` to bridge the container's requests back to your machine's hardware.
 
 ---
 
