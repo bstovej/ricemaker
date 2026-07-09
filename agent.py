@@ -237,16 +237,65 @@ class RicemakerAgent:
         else:
             raise Exception(f"Unsupported file type for OCR: {ext}")
 
+    def convert_legacy_office(self, file_path, target_ext):
+        """Converts legacy office formats (.doc, .ppt, .xls) to modern formats (.docx, .pptx, .xlsx) using LibreOffice soffice"""
+        import shutil, subprocess
+        file_path = Path(file_path)
+        out_dir = Path("/tmp")
+        out_dir.mkdir(parents=True, exist_ok=True)
+        
+        soffice_bin = "soffice"
+        if os.name == "posix" and not shutil.which(soffice_bin):
+            mac_soffice = "/Applications/LibreOffice.app/Contents/MacOS/soffice"
+            if Path(mac_soffice).exists():
+                soffice_bin = mac_soffice
+                
+        if not shutil.which(soffice_bin) and soffice_bin == "soffice":
+            raise Exception("LibreOffice (soffice) command not found. Please install LibreOffice to process legacy office formats.")
+            
+        logging.info(f"Converting legacy office file {file_path.name} to {target_ext} using LibreOffice...")
+        cmd = [
+            soffice_bin,
+            "--headless",
+            "--convert-to",
+            target_ext,
+            "--outdir",
+            str(out_dir.absolute()),
+            str(file_path.absolute())
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        if result.returncode != 0:
+            raise Exception(f"LibreOffice conversion failed: {result.stderr}")
+            
+        out_file = out_dir / f"{file_path.stem}.{target_ext}"
+        if out_file.exists():
+            return out_file
+        raise Exception(f"Converted file {out_file.name} was not found after LibreOffice conversion.")
+
     def safe_extract(self, file_path):
         """Extracts text with fallbacks and size-based strategies to avoid OOM"""
         file_path = Path(file_path)
         ext = file_path.suffix.lower()
         
-        # 1. Check if it's a direct image file
+        # 1. Check if it's a legacy office file and convert it
+        if ext in ('.doc', '.xls', '.ppt'):
+            target_ext = 'docx' if ext == '.doc' else ('xlsx' if ext == '.xls' else 'pptx')
+            try:
+                converted_file = self.convert_legacy_office(file_path, target_ext)
+                content = self.safe_extract(converted_file)
+                if converted_file.exists():
+                    os.remove(converted_file)
+                return content
+            except Exception as e:
+                logging.error(f"Legacy office conversion failed for {file_path.name}: {e}")
+                raise e
+        
+        # 2. Check if it's a direct image file
         if ext in ('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'):
             return self.ocr_extract(file_path)
             
-        # 2. Strategy: For large PDFs, try a simpler extractor first to avoid MarkItDown's heavy dependencies
+        # 3. Strategy: For large PDFs, try a simpler extractor first to avoid MarkItDown's heavy dependencies
         if ext == '.pdf' and file_path.stat().st_size > 15 * 1024 * 1024:
             logging.info(f"Large PDF detected ({file_path.stat().st_size / 1024 / 1024:.1f} MB). Using lightweight extractor first.")
             try:
@@ -258,7 +307,7 @@ class RicemakerAgent:
             except Exception as e:
                 logging.warning(f"Lightweight extraction failed for {file_path.name}: {e}")
 
-        # 3. Strategy: Fallback to MarkItDown
+        # 4. Strategy: Fallback to MarkItDown
         try:
             md = MarkItDown()
             content = md.convert(str(file_path)).text_content
