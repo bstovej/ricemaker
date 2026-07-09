@@ -1,7 +1,18 @@
 from flask import Flask, jsonify, render_template, request
 from pathlib import Path
-import json, subprocess, shutil, os, time, re
+import json, subprocess, shutil, os, time, re, sys
 import pandas as pd
+
+# Ensure config.json and keys.json are present and are files (prevent Docker from creating folders)
+for filename, sample_name in [('config.json', 'sample_config.json'), ('keys.json', 'sample_keys.json')]:
+    path = Path(filename)
+    if not path.exists():
+        print(f"CRITICAL ERROR: {filename} is missing! Please create it by copying the reference {sample_name} file.", file=sys.stderr)
+        sys.exit(1)
+    if path.is_dir():
+        print(f"CRITICAL ERROR: {filename} exists as a directory! Please remove it and create a proper JSON file referencing {sample_name}.", file=sys.stderr)
+        sys.exit(1)
+
 app = Flask(__name__, static_folder='data/static')
 
 DATA_DIR = Path('data')
