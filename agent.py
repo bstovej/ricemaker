@@ -180,16 +180,77 @@ class RicemakerAgent:
         df = pd.DataFrame([new_entry])
         df.to_csv(stats_path, mode='a', index=False, header=not file_exists)
 
+    def ocr_extract(self, file_path):
+        """Attempts OCR on images or PDF pages using easyocr and fitz (PyMuPDF)"""
+        file_path = Path(file_path)
+        ext = file_path.suffix.lower()
+        
+        # Load easyocr
+        try:
+            import easyocr
+            reader = easyocr.Reader(['en'])
+        except Exception as e:
+            logging.error(f"Cannot initialize easyocr: {e}")
+            raise Exception("OCR engine (easyocr) not available.")
+            
+        text_content = []
+        
+        if ext in ('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'):
+            logging.info(f"Performing OCR on image: {file_path.name}")
+            try:
+                result = reader.readtext(str(file_path.absolute()), detail=0)
+                text = " ".join(result)
+                if text.strip():
+                    return text
+                raise Exception("No text detected in image.")
+            except Exception as e:
+                logging.error(f"Image OCR failed for {file_path.name}: {e}")
+                raise e
+                
+        elif ext == '.pdf':
+            logging.info(f"Performing OCR fallback on PDF pages for: {file_path.name}")
+            try:
+                import fitz  # PyMuPDF
+                doc = fitz.open(str(file_path.absolute()))
+                
+                # Limit to first 30 pages to avoid performance / timeout issues
+                max_pages = min(len(doc), 30)
+                for page_num in range(max_pages):
+                    logging.info(f"OCRing page {page_num + 1}/{max_pages} for {file_path.name}...")
+                    page = doc.load_page(page_num)
+                    pix = page.get_pixmap(dpi=150) # Use reasonable resolution
+                    
+                    # Convert to bytes and run OCR
+                    img_bytes = pix.tobytes("png")
+                    result = reader.readtext(img_bytes, detail=0)
+                    page_text = " ".join(result)
+                    
+                    if page_text.strip():
+                        text_content.append(f"--- Page {page_num + 1} ---\n{page_text}")
+                
+                if text_content:
+                    return "\n\n".join(text_content)
+                raise Exception("No text detected in PDF via OCR.")
+            except Exception as e:
+                logging.error(f"PDF OCR failed for {file_path.name}: {e}")
+                raise e
+        else:
+            raise Exception(f"Unsupported file type for OCR: {ext}")
+
     def safe_extract(self, file_path):
         """Extracts text with fallbacks and size-based strategies to avoid OOM"""
         file_path = Path(file_path)
+        ext = file_path.suffix.lower()
         
-        # 1. Strategy: For large PDFs, try a simpler extractor first to avoid MarkItDown's heavy dependencies
-        if file_path.suffix.lower() == '.pdf' and file_path.stat().st_size > 15 * 1024 * 1024:
+        # 1. Check if it's a direct image file
+        if ext in ('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'):
+            return self.ocr_extract(file_path)
+            
+        # 2. Strategy: For large PDFs, try a simpler extractor first to avoid MarkItDown's heavy dependencies
+        if ext == '.pdf' and file_path.stat().st_size > 15 * 1024 * 1024:
             logging.info(f"Large PDF detected ({file_path.stat().st_size / 1024 / 1024:.1f} MB). Using lightweight extractor first.")
             try:
                 from pdfminer.high_level import extract_text
-                # Use a smaller maxpages or similar if needed, but for now just try basic extract_text
                 content = extract_text(str(file_path))
                 if content and len(content.strip()) > 500: # Ensure we got a meaningful amount of text
                     logging.info(f"Successfully extracted {len(content)} chars from large PDF using pdfminer.")
@@ -197,10 +258,22 @@ class RicemakerAgent:
             except Exception as e:
                 logging.warning(f"Lightweight extraction failed for {file_path.name}: {e}")
 
-        # 2. Strategy: Fallback to MarkItDown
-        # We initialize it here to keep it local and potentially free memory sooner
-        md = MarkItDown()
-        return md.convert(str(file_path)).text_content
+        # 3. Strategy: Fallback to MarkItDown
+        try:
+            md = MarkItDown()
+            content = md.convert(str(file_path)).text_content
+            # If PDF text is extremely short or empty, it's likely a scanned document (image-only)
+            if ext == '.pdf' and (not content or len(content.strip()) < 100):
+                logging.info(f"PDF content too short ({len(content.strip()) if content else 0} chars). Retrying with OCR...")
+                return self.ocr_extract(file_path)
+            return content
+        except Exception as e:
+            logging.warning(f"MarkItDown extraction failed for {file_path.name}: {e}")
+            # If MarkItDown failed and it's a PDF, try OCR as a final fallback
+            if ext == '.pdf':
+                logging.info(f"MarkItDown failed on PDF. Retrying with OCR...")
+                return self.ocr_extract(file_path)
+            raise e
 
     def process_file(self, file_path):
         """Logic to extract content and call LLM with recursive chunking"""

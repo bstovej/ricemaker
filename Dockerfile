@@ -18,7 +18,8 @@ RUN pip install --no-cache-dir \
     "markitdown[all]" \
     requests \
     pydantic \
-    openai
+    openai \
+    easyocr
 
 # Copy application files
 COPY . .
