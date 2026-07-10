@@ -206,16 +206,25 @@ def session_stats():
             # Union of physically present input files and historically recorded files
             all_file_names = current_input_files.union(plan_files.keys())
             
-            total_files = len(all_file_names)
-            completed_files = 0
+            # Total Files Received
+            total_received = plan.get('total_received_count', 0)
+            if total_received <= 0:
+                total_received = len(all_file_names)
+            
+            # Active Queue Size
+            queue_size = 0
             for name in all_file_names:
                 info = plan_files.get(name, {})
                 status = info.get('status', 'pending')
-                if status in ('completed', 'archived'):
-                    completed_files += 1
+                if not status.startswith('error') and status != 'archived' and (status == 'pending' or 'Processing' in status):
+                    queue_size += 1
             
-            if total_files > 0:
-                pct = int((completed_files / total_files) * 100)
+            # Ensure total_received is at least as large as the queue size for safety
+            if total_received < queue_size:
+                total_received = queue_size
+                
+            if total_received > 0:
+                pct = int(((total_received - queue_size) / total_received) * 100)
                 session_data['status_message'] = f"Ricemaking in progress - {pct}% completed"
                 session_data['status_type'] = 'progress'
             else:
