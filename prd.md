@@ -65,7 +65,7 @@ Ricemaker operates on a **MapReduce** strategy to handle large volumes of data w
 * `data/history.csv`: Permanent audit log of all processed files.
 
 ## 7. Outstanding Tasks (from Work Logs)
-- [ ] **Multimedia Integration:** Implement Whisper-based transcription for Audio/Video files.
+- [X] **Multimedia Integration:** Implement Whisper-based transcription for Audio/Video files. Use the OpenAI/Whisper model. Prepend a summary of the transcription (in English) to the transcription (after the completed YAML frontmatter section, which includes the moc_blurb like all other files processed). If the audio/video is in Chinese/Mandarin, only the summary needs to be in English (original transcription text doesn't need to be translated).
 - [ ] **Cost Calculation:** Enhance the stats engine to track USD costs for cloud LLM providers accurately.
 - [X] **Settings UI:** Implement a Settings page to modify `config.json` contents directly from the browser (triggering backend restarts).
 - [X] **Prompt Template:** Allow for the agent prompt to be configurable based on a template file specified in `config.json`. Restart review after changes are saved.

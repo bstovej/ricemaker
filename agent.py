@@ -369,6 +369,50 @@ class RicemakerAgent:
                 return self.ocr_extract(file_path)
             raise e
 
+    def transcribe_audio_video(self, file_path):
+        """Transcribes audio/video files using OpenAI Whisper API"""
+        file_path = Path(file_path)
+        logging.info(f"Transcribing audio/video file via OpenAI/Whisper: {file_path.name}")
+        
+        supported_by_whisper = ('.mp3', '.mp4', '.mpeg', '.mpga', '.m4a', '.wav', '.webm')
+        temp_mp3 = None
+        
+        try:
+            if file_path.suffix.lower() not in supported_by_whisper:
+                import subprocess
+                temp_mp3 = file_path.with_suffix('.temp.mp3')
+                logging.info(f"Converting unsupported format {file_path.name} to MP3 using ffmpeg...")
+                cmd = ["ffmpeg", "-y", "-i", str(file_path.absolute()), "-vn", "-acodec", "libmp3lame", "-q:a", "2", str(temp_mp3.absolute())]
+                subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                transcribe_path = temp_mp3
+            else:
+                transcribe_path = file_path
+
+            from openai import OpenAI
+            api_key = self.keys.get("OPENAI_API_KEY")
+            if not api_key:
+                raise Exception("OPENAI_API_KEY is missing in keys.json")
+                
+            client = OpenAI(api_key=api_key)
+            with open(transcribe_path, "rb") as audio_file:
+                transcription = client.audio.transcriptions.create(
+                    model="whisper-1",
+                    file=audio_file
+                )
+            
+            transcript_text = transcription.text
+            if not transcript_text or not transcript_text.strip():
+                raise Exception("Whisper returned empty transcription.")
+            
+            return transcript_text
+            
+        finally:
+            if temp_mp3 and temp_mp3.exists():
+                try:
+                    os.remove(temp_mp3)
+                except Exception as e:
+                    logging.warning(f"Failed to remove temp file {temp_mp3}: {e}")
+
     def process_file(self, file_path):
         """Logic to extract content and call LLM with recursive chunking"""
         file_path = Path(file_path)
@@ -408,6 +452,64 @@ class RicemakerAgent:
         start_time = time.time()
         
         try:
+            ext = file_path.suffix.lower()
+            is_audio_video = ext in ('.mp3', '.wav', '.m4a', '.webm', '.mp4', '.mpeg', '.mpga', '.avi', '.mov', '.mkv', '.flac', '.ogg')
+            
+            if is_audio_video:
+                self.update_state(file_path.name, "Processing (Transcribing)", session_id=self.session_id_str)
+                transcription_text = self.transcribe_audio_video(file_path)
+                extraction_time = time.time() - start_time
+                
+                # Let's generate a summary in English using the LLM
+                self.update_state(file_path.name, "Processing (Summarizing)", session_id=self.session_id_str)
+                inference_start = time.time()
+                
+                pre_p = self.session_tokens["prompt"]
+                pre_c = self.session_tokens["completion"]
+                
+                summary_prompt = "Summarize the key topics and contents of this transcription in English. Provide clear headings if necessary. If the transcription is in Chinese/Mandarin or any other language, the summary MUST be in English."
+                summary_result = self._call_llm(summary_prompt, transcription_text[:120000])
+                
+                tag_resp = self._call_llm(
+                    self.prompts.get("categorization", "You are a metadata specialist. Based on the summary provided, generate 3-5 highly relevant Obsidian tags in 'domain/subject' format (e.g. 'science/physics', 'tech/ai'). Return ONLY a comma-separated list of tags without '#' symbols."),
+                    f"Document Summary:\n{summary_result[:5000]}"
+                )
+                tags = [t.strip().replace('#', '').lower() for t in tag_resp.split(',')]
+                if not tags: tags = ["audio/transcription"]
+                
+                moc_blurb = self._call_llm(
+                    self.prompts.get("moc_blurb", "You are a librarian creating a Map of Content (MOC). Summarize the key essence of this document in 150 words or less. Focus on its core value and main findings. Return ONLY the summary text."),
+                    f"Full Review:\n{summary_result[:8000]}"
+                )
+                
+                file_prompt_tokens = (self.session_tokens["prompt"] - pre_p)
+                file_completion_tokens = (self.session_tokens["completion"] - pre_c)
+                
+                # Prepend the English summary to the original transcription
+                final_result = f"## Summary\n\n{summary_result}\n\n---\n\n## Transcription\n\n{transcription_text}"
+                
+                inference_time = time.time() - inference_start
+                
+                summary_path = Path(self.config['output_folder']) / f"{file_path.name}.md"
+                self.update_state(file_path.name, "completed", final_result, tags=tags, moc_blurb=moc_blurb, session_id=self.session_id_str)
+                
+                self.log_history(file_path, summary_path, "completed", model_used=self.active_model)
+                
+                self.log_stats(
+                    filename=file_path.name,
+                    file_type=file_path.suffix.lower(),
+                    model=self.active_model,
+                    prompt_tokens=file_prompt_tokens,
+                    completion_tokens=file_completion_tokens,
+                    extraction_time=extraction_time,
+                    inference_time=inference_time
+                )
+                
+                self.session_processed += 1
+                self._update_session_file()
+                logging.info(f"Successfully processed audio/video file {file_path.name}")
+                return
+
             content = self.safe_extract(file_path)
             extraction_time = time.time() - start_time
             
