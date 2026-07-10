@@ -21,7 +21,8 @@ RUN pip install --no-cache-dir \
     openai \
     easyocr \
     transformers \
-    huggingface_hub
+    huggingface_hub \
+    pymupdf
 
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 
