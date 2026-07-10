@@ -369,10 +369,37 @@ class RicemakerAgent:
                 return self.ocr_extract(file_path)
             raise e
 
+    def _get_transcriber(self):
+        """Lazy-loads and caches local Whisper transcriber pipeline"""
+        if not hasattr(self, '_transcriber') or self._transcriber is None:
+            import torch
+            from transformers import pipeline
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            logging.info(f"Initializing local Whisper transcriber on device: {device}...")
+            
+            model_name = self.config.get("whisper_model", "openai/whisper-small")
+            if "karanchopda333" in model_name or ":" in model_name:
+                model_name = "openai/whisper-small"
+                
+            local_model_dir = os.path.join("/app/data/whisper_cache", model_name.replace("/", "--"))
+            
+            if not os.path.exists(local_model_dir):
+                logging.info(f"Downloading model {model_name} for offline use to {local_model_dir}...")
+                from huggingface_hub import snapshot_download
+                snapshot_download(repo_id=model_name, local_dir=local_model_dir)
+                
+            self._transcriber = pipeline(
+                "automatic-speech-recognition",
+                model=local_model_dir,
+                device=device,
+                return_timestamps=True
+            )
+        return self._transcriber
+
     def transcribe_audio_video(self, file_path):
-        """Transcribes audio/video files using OpenAI Whisper API"""
+        """Transcribes audio/video files using local Whisper model via Transformers pipeline"""
         file_path = Path(file_path)
-        logging.info(f"Transcribing audio/video file via OpenAI/Whisper: {file_path.name}")
+        logging.info(f"Transcribing audio/video file via local Transformers Whisper: {file_path.name}")
         
         supported_by_whisper = ('.mp3', '.mp4', '.mpeg', '.mpga', '.m4a', '.wav', '.webm')
         temp_mp3 = None
@@ -388,33 +415,17 @@ class RicemakerAgent:
             else:
                 transcribe_path = file_path
 
-            from openai import OpenAI
-            api_key = self.keys.get("OPENAI_API_KEY", "sk-not-required")
+            transcriber = self._get_transcriber()
+            result = transcriber(
+                str(transcribe_path),
+                chunk_length_s=30,
+                batch_size=16,
+                return_timestamps=True
+            )
             
-            # Resolve local whisper endpoint base url
-            base_url = self.keys.get("WHISPER_API_BASE")
-            if not base_url:
-                llm_provider = self.config.get('llm_provider', 'llama_cpp').lower()
-                if llm_provider == 'ollama':
-                    base_url = self.keys.get("OLLAMA_API_BASE") or "http://host.docker.internal:11434"
-                    if not base_url.endswith('/v1'):
-                        base_url = base_url.rstrip('/') + '/v1'
-                else:
-                    base_url = self.keys.get("LLAMA_CPP_API_BASE") or "http://host.docker.internal:8080/v1"
-                
-            logging.info(f"Connecting to local Whisper server base URL: {base_url}")
-            client = OpenAI(api_key=api_key, base_url=base_url)
-            whisper_model = self.config.get("whisper_model", "karanchopda333/whisper:latest")
-            
-            with open(transcribe_path, "rb") as audio_file:
-                transcription = client.audio.transcriptions.create(
-                    model=whisper_model,
-                    file=audio_file
-                )
-            
-            transcript_text = transcription.text
-            if not transcript_text or not transcript_text.strip():
-                raise Exception("Local Whisper server returned empty transcription.")
+            transcript_text = result.get("text", "").strip()
+            if not transcript_text:
+                raise Exception("Local Whisper transcriber returned empty transcription.")
             
             return transcript_text
             

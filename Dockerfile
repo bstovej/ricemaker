@@ -10,7 +10,6 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy and install dependencies
 RUN pip install --no-cache-dir \
     flask \
     pandas \
@@ -20,7 +19,10 @@ RUN pip install --no-cache-dir \
     requests \
     pydantic \
     openai \
-    easyocr
+    easyocr \
+    torch --index-url https://download.pytorch.org/whl/cpu \
+    transformers \
+    huggingface_hub
 
 # Copy application files
 COPY . .
