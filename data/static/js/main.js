@@ -498,6 +498,9 @@ async function refreshDashboard() {
             const activeModelEl = document.getElementById('stat-active-model');
             if (activeModelEl) activeModelEl.innerText = sessionData.active_model || 'Idle';
             
+            const totalReceivedEl = document.getElementById('stat-total-received');
+            if (totalReceivedEl) totalReceivedEl.innerText = sessionData.total_received_count || 0;
+            
             const tokens = sessionData.tokens || { prompt: 0, completion: 0 };
             const totalTokens = tokens.prompt + tokens.completion;
             

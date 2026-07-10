@@ -712,7 +712,23 @@ class RicemakerAgent:
             
             # Adjust priority based on current file status
             plan = self.load_json(DATA_DIR / 'plan.json')
-            f_status = plan.get('files', {}).get(file_path.name, {}).get('status', '')
+            if 'files' not in plan:
+                plan['files'] = {}
+                
+            # If the file is completely new to plan.json, increment total received count and initialize state
+            if file_path.name not in plan['files']:
+                plan['files'][file_path.name] = {
+                    "status": "pending",
+                    "timestamp": time.time(),
+                    "model": self.active_model,
+                    "session_id": self.session_id_str
+                }
+                plan['total_received_count'] = plan.get('total_received_count', 0) + 1
+                (DATA_DIR / 'plan.json').write_text(json.dumps(plan, indent=2))
+                f_status = 'pending'
+            else:
+                f_status = plan['files'][file_path.name].get('status', '')
+                
             if f_status == 'pending':
                 # Strong boost: negative number makes it highest priority
                 priority -= 1000000000

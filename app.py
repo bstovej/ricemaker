@@ -169,6 +169,9 @@ def session_stats():
             "active_model": "Syncing...",
             "last_active": time.time()
         }
+    
+    plan = get_data(DATA_DIR / 'plan.json')
+    session_data['total_received_count'] = plan.get('total_received_count', 0)
         
     # Check config/keys presence first
     config_errors = []
@@ -622,6 +625,9 @@ def cleanup_archived():
     for filename in files_to_purge:
         _purge_file_data(filename, plan)
         
+    # Reset total received count to count of remaining active files in plan
+    plan['total_received_count'] = len(plan.get('files', {}))
+    
     (DATA_DIR / 'plan.json').write_text(json.dumps(plan, indent=2))
     return jsonify({"success": True, "count": len(files_to_purge)})
 
