@@ -3,7 +3,7 @@ services:
     build: .
     container_name: ricemaker
     ports:
-      - "1688:1688"
+      - "0.0.0.0:1688:1688"
     volumes:
       # Map host-level access points (adjust for your OS)
       # macOS Example:
