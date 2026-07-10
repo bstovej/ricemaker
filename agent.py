@@ -389,20 +389,26 @@ class RicemakerAgent:
                 transcribe_path = file_path
 
             from openai import OpenAI
-            api_key = self.keys.get("OPENAI_API_KEY")
-            if not api_key:
-                raise Exception("OPENAI_API_KEY is missing in keys.json")
+            api_key = self.keys.get("OPENAI_API_KEY", "sk-not-required")
+            
+            # Resolve local whisper endpoint base url
+            base_url = self.keys.get("WHISPER_API_BASE")
+            if not base_url:
+                base_url = self.keys.get("LLAMA_CPP_API_BASE") or "http://host.docker.internal:8080/v1"
                 
-            client = OpenAI(api_key=api_key)
+            logging.info(f"Connecting to local Whisper server base URL: {base_url}")
+            client = OpenAI(api_key=api_key, base_url=base_url)
+            whisper_model = self.config.get("whisper_model", "whisper-1")
+            
             with open(transcribe_path, "rb") as audio_file:
                 transcription = client.audio.transcriptions.create(
-                    model="whisper-1",
+                    model=whisper_model,
                     file=audio_file
                 )
             
             transcript_text = transcription.text
             if not transcript_text or not transcript_text.strip():
-                raise Exception("Whisper returned empty transcription.")
+                raise Exception("Local Whisper server returned empty transcription.")
             
             return transcript_text
             
