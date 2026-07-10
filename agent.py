@@ -479,7 +479,7 @@ class RicemakerAgent:
                 pre_p = self.session_tokens["prompt"]
                 pre_c = self.session_tokens["completion"]
                 
-                summary_prompt = "Summarize the key topics and contents of this transcription in English. Provide clear headings if necessary. If the transcription is in Chinese/Mandarin or any other language, the summary MUST be in English."
+                summary_prompt = self.prompts.get("transcription_summary", "Summarize the key topics and contents of this transcription in English. Provide clear headings if necessary. If the transcription is in Chinese/Mandarin or any other language, the summary MUST be in English. Do not use Emojis or inline emphasis (e.g., bold, italic) on any paragraphs and headings.")
                 summary_result = self._call_llm(summary_prompt, transcription_text[:120000])
                 
                 tag_resp = self._call_llm(
