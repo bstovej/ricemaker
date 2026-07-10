@@ -113,7 +113,7 @@ class RicemakerAgent:
                         {"role": "user", "content": user_content}
                     ],
                     api_base=api_base,
-                    timeout=600
+                    timeout=800
                 )
                 
                 # Track Tokens (Session Only)
