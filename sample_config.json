@@ -10,5 +10,6 @@
   "model_name": "your-model-name",
   "output_folder": "./output",
   "prompts_file": "prompts.json",
-  "secondary_model_name": "your-model-name"
+  "secondary_model_name": "your-model-name",
+  "whisper_model": "karanchopda333/whisper:latest"
 }

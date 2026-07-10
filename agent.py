@@ -394,11 +394,17 @@ class RicemakerAgent:
             # Resolve local whisper endpoint base url
             base_url = self.keys.get("WHISPER_API_BASE")
             if not base_url:
-                base_url = self.keys.get("LLAMA_CPP_API_BASE") or "http://host.docker.internal:8080/v1"
+                llm_provider = self.config.get('llm_provider', 'llama_cpp').lower()
+                if llm_provider == 'ollama':
+                    base_url = self.keys.get("OLLAMA_API_BASE") or "http://host.docker.internal:11434"
+                    if not base_url.endswith('/v1'):
+                        base_url = base_url.rstrip('/') + '/v1'
+                else:
+                    base_url = self.keys.get("LLAMA_CPP_API_BASE") or "http://host.docker.internal:8080/v1"
                 
             logging.info(f"Connecting to local Whisper server base URL: {base_url}")
             client = OpenAI(api_key=api_key, base_url=base_url)
-            whisper_model = self.config.get("whisper_model", "whisper-1")
+            whisper_model = self.config.get("whisper_model", "karanchopda333/whisper:latest")
             
             with open(transcribe_path, "rb") as audio_file:
                 transcription = client.audio.transcriptions.create(
