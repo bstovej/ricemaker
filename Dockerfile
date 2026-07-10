@@ -20,9 +20,10 @@ RUN pip install --no-cache-dir \
     pydantic \
     openai \
     easyocr \
-    torch --index-url https://download.pytorch.org/whl/cpu \
     transformers \
     huggingface_hub
+
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 
 # Copy application files
 COPY . .
