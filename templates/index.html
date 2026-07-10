@@ -455,78 +455,84 @@
         </div>
 
         <!-- Archive View -->
-        <div id="view-archive" style="display: none; gap: 2rem; align-items: flex-start; width: 100%; height: 100%;">
-            <!-- Left: Completed List -->
-            <section style="flex: 1.5; min-width: 0; height: 100%;">
-                <div class="section-header" style="background-color: rgba(16, 185, 129, 0.05);">
-                    <div style="display: flex; gap: 1rem; align-items: center;">
-                        <h2 style="color: var(--status-completed);">Completed Reports</h2>
-                        <span id="archive-completed-count" style="font-size: 0.875rem; color: var(--text-secondary);">0 files</span>
-                    </div>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;" onclick="window.archiveAllFiles()">Archive All Completed</button>
-                        <button class="btn btn-danger" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;" onclick="window.purgeArchived()"><i data-lucide="trash-2" style="width: 12px; height: 12px;"></i> Purge All Archived</button>
-                    </div>
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="width: 50%;">File Name</th>
-                                <th style="width: 25%;">Model</th>
-                                <th style="width: 25%;">Completion Date</th>
-                            </tr>
-                        </thead>
-                        <tbody id="archive-completed-body">
-                            <!-- Completed Rows -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+        <div id="view-archive" style="display: none; width: 100%; height: 100%;">
+            <div class="dashboard-content">
+                <!-- Left Column: Completed Reports + Processing Errors -->
+                <div style="display: flex; flex-direction: column; gap: 1rem; min-width: 0; height: 100%; min-height: 0;">
+                    <!-- Completed Reports -->
+                    <section style="flex: 1.2; display: flex; flex-direction: column; min-height: 0;">
+                        <div class="section-header" style="background-color: rgba(16, 185, 129, 0.05);">
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <h2 style="color: var(--status-completed);">Completed Reports</h2>
+                                <span id="archive-completed-count" style="font-size: 0.875rem; color: var(--text-secondary);">0 files</span>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;" onclick="window.archiveAllFiles()">Archive All Completed</button>
+                                <button class="btn btn-danger" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;" onclick="window.purgeArchived()"><i data-lucide="trash-2" style="width: 12px; height: 12px;"></i> Purge All Archived</button>
+                            </div>
+                        </div>
+                        <div class="table-container" style="flex: 1; overflow-y: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50%;">File Name</th>
+                                        <th style="width: 25%;">Model</th>
+                                        <th style="width: 25%;">Completion Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="archive-completed-body">
+                                    <!-- Completed Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
 
-            <!-- Right: Preview + Errors -->
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 2rem; min-width: 0; height: 100%;">
-                <section style="flex: 2; min-width: 0; display: flex; flex-direction: column;">
-                    <div class="section-header">
-                        <div style="display: flex; gap: 0.5rem; align-items: center;">
-                            <h2>Report Preview</h2>
+                    <!-- Processing Errors -->
+                    <section style="flex: 1.3; display: flex; flex-direction: column; min-height: 0;">
+                        <div class="section-header" style="background-color: rgba(239, 68, 68, 0.05);">
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <h2 style="color: var(--status-error);">Processing Errors</h2>
+                                <span id="archive-error-count" style="font-size: 0.875rem; color: var(--text-secondary);">0 files</span>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;" onclick="window.archiveAllErrors()">Archive Error Files</button>
+                                <button class="btn btn-warning" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;" onclick="window.rereviewAllErrors()"><i data-lucide="refresh-cw" style="width: 12px; height: 12px;"></i> Re-review All</button>
+                            </div>
                         </div>
-                        <div style="display: flex; gap: 0.5rem;" id="preview-actions">
-                            <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;" id="btn-archive-current" onclick="window.archiveCurrentFile()">Archive Current</button>
-                            <button class="btn btn-warning" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;" id="btn-rereview" onclick="window.rereviewCurrentFile()">Re-review</button>
+                        <div class="table-container" style="flex: 1; overflow-y: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50%;">File Name</th>
+                                        <th style="width: 25%;">Model</th>
+                                        <th style="width: 25%;">Attempted Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="archive-error-body">
+                                    <!-- Error Rows -->
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                    <div id="archive-summary-content" style="padding: 1rem; overflow-y: auto; font-size: 0.8125rem; flex: 1;">
-                        <p style="color: var(--text-secondary);">Select a completed report to preview.</p>
-                    </div>
-                </section>
+                    </section>
+                </div>
 
-                <section style="flex: 1.2; min-width: 0; display: flex; flex-direction: column;">
-                    <div class="section-header" style="background-color: rgba(239, 68, 68, 0.05);">
-                        <div style="display: flex; gap: 1rem; align-items: center;">
-                            <h2 style="color: var(--status-error);">Processing Errors</h2>
-                            <span id="archive-error-count" style="font-size: 0.875rem; color: var(--text-secondary);">0 files</span>
+                <!-- Right Column: Report Preview -->
+                <div style="display: flex; flex-direction: column; min-width: 0; height: 100%; min-height: 0;">
+                    <section style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+                        <div class="section-header">
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <h2>Report Preview</h2>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;" id="preview-actions">
+                                <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;" id="btn-archive-current" onclick="window.archiveCurrentFile()">Archive Current</button>
+                                <button class="btn btn-warning" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;" id="btn-rereview" onclick="window.rereviewCurrentFile()">Re-review</button>
+                            </div>
                         </div>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;" onclick="window.archiveAllErrors()">Archive Error Files</button>
-                            <button class="btn btn-warning" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;" onclick="window.rereviewAllErrors()"><i data-lucide="refresh-cw" style="width: 12px; height: 12px;"></i> Re-review All</button>
+                        <div id="archive-summary-content" style="padding: 1rem; overflow-y: auto; font-size: 0.8125rem; flex: 1;">
+                            <p style="color: var(--text-secondary);">Select a completed report to preview.</p>
                         </div>
-                    </div>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th style="width: 50%;">File Name</th>
-                                    <th style="width: 25%;">Model</th>
-                                    <th style="width: 25%;">Attempted Date</th>
-                                </tr>
-                            </thead>
-                            <tbody id="archive-error-body">
-                                <!-- Error Rows -->
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
+                    </section>
+                </div>
             </div>
         </div>
 
