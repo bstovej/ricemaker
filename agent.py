@@ -192,20 +192,22 @@ class RicemakerAgent:
         df.to_csv(stats_path, mode='a', index=False, header=not file_exists)
 
     def log_error(self, filename, file_type, model, error_message, traceback_str=None):
-        """Logs structured processing errors to the configured error log file path"""
+        """Logs structured processing errors to the standardized file name inside the configured error log path"""
         try:
             import pandas as pd
-            # Resolve error log file path
-            configured_path = self.config.get('error_log_file')
-            if configured_path and configured_path.strip():
-                error_log_path = Path(configured_path.strip())
+            # Resolve error log folder path
+            configured_dir = self.config.get('error_log_path')
+            if configured_dir and configured_dir.strip():
+                log_dir = Path(configured_dir.strip())
             else:
                 # Default to output folder
-                output_dir = Path(self.config.get('output_folder', './output'))
-                error_log_path = output_dir / 'error_log.csv'
+                log_dir = Path(self.config.get('output_folder', './output'))
                 
-            # Ensure the parent directory exists
-            error_log_path.parent.mkdir(parents=True, exist_ok=True)
+            # Ensure the directory exists
+            log_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Standardized file name: ricemaker_error_log_<session_id_str>.csv
+            error_log_path = log_dir / f"ricemaker_error_log_{self.session_id_str}.csv"
             file_exists = error_log_path.exists()
             
             new_entry = {

@@ -109,7 +109,8 @@ Ricemaker maintains a clean record of its operations:
 
 ### v2.2 (2026-07-10)
 - Implemented structured error logging that captures detailed traceback stack traces, active model, and exception details to a CSV format.
-- Made the error log location configurable via the new `"error_log_file"` key in `config.json` (defaults to the output folder path).
+- Standardized error log filenames to `ricemaker_error_log_<date_time_started>.csv`.
+- Made the error log destination folder configurable via the new `"error_log_path"` key in `config.json` (defaults to the output folder path).
 - Added `libreoffice` and `easyocr` dependencies to the Docker setup to enable legacy file translation and scanned PDF fallback OCR out of the box.
 - Bypassed hard Flask crashes on startup when keys/config files are missing, allowing the web service to launch and report diagnostic connection/configuration failures directly inside a dynamic dashboard banner.
 
