@@ -88,6 +88,28 @@ Access the dashboard at: `http://localhost:1688`
 
 ---
 
+## Audio/Video Transcription
+
+Ricemaker supports local Speech-to-Text (STT) transcription for audio and video files.
+
+### 1. Default (Whisper Model)
+By default, Ricemaker is configured to use a local Whisper model served via Ollama:
+- **Model:** `karanchopda333/whisper:latest` (or any other Whisper model)
+- **Routing:** Automatically resolves through Ollama's `/v1` compatibility layer if `llm_provider` is set to `ollama`.
+
+### 2. Alternative (Gemma 4 Multimodal STT)
+As an alternative to Whisper, you can use Google's native multimodal audio model **Gemma 4** (`e2b` or `e4b` variants) running in Ollama to transcribe directly:
+1. Pull the Gemma 4 variant on your host machine:
+   ```bash
+   ollama pull gemma4:e2b
+   ```
+2. Update your `config.json` to define the target model under the `"whisper_model"` parameter:
+   ```json
+   "whisper_model": "gemma4:e2b"
+   ```
+
+---
+
 ## 📁 File Structure & Lineage
 Ricemaker maintains a clean record of its operations:
 - **`input_folder`**: Raw files to be reviewed.
