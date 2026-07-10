@@ -2,6 +2,7 @@
   "archive_folder": "./reviewed",
   "audio_translation": true,
   "category": "General",
+  "error_log_file": "",
   "input_folder": "./input",
   "intermediate_folder": "./intermediate",
   "max_budget_usd": 100,

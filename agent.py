@@ -191,6 +191,38 @@ class RicemakerAgent:
         df = pd.DataFrame([new_entry])
         df.to_csv(stats_path, mode='a', index=False, header=not file_exists)
 
+    def log_error(self, filename, file_type, model, error_message, traceback_str=None):
+        """Logs structured processing errors to the configured error log file path"""
+        try:
+            import pandas as pd
+            # Resolve error log file path
+            configured_path = self.config.get('error_log_file')
+            if configured_path and configured_path.strip():
+                error_log_path = Path(configured_path.strip())
+            else:
+                # Default to output folder
+                output_dir = Path(self.config.get('output_folder', './output'))
+                error_log_path = output_dir / 'error_log.csv'
+                
+            # Ensure the parent directory exists
+            error_log_path.parent.mkdir(parents=True, exist_ok=True)
+            file_exists = error_log_path.exists()
+            
+            new_entry = {
+                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "filename": filename,
+                "file_type": file_type,
+                "model": model,
+                "error_message": error_message,
+                "traceback": traceback_str or ""
+            }
+            
+            df = pd.DataFrame([new_entry])
+            df.to_csv(error_log_path, mode='a', index=False, header=not file_exists)
+            logging.info(f"Logged error for {filename} to {error_log_path}")
+        except Exception as ex:
+            logging.error(f"Failed to log error to csv: {ex}")
+
     def ocr_extract(self, file_path):
         """Attempts OCR on images or PDF pages using easyocr and fitz (PyMuPDF)"""
         file_path = Path(file_path)
@@ -524,11 +556,14 @@ class RicemakerAgent:
             # self.generate_master_report()
             
         except Exception as e:
+            import traceback
+            tb_str = traceback.format_exc()
             logging.error(f"Error processing {file_path.name}: {e}")
             self.update_state(file_path.name, "error", error_msg=str(e), session_id=self.session_id_str)
             self.log_history(file_path, "N/A", "error", model_used=self.active_model)
             # Log failure stats if possible (with 0 tokens)
             self.log_stats(file_path.name, file_path.suffix.lower(), self.active_model, 0, 0, 0, 0)
+            self.log_error(file_path.name, file_path.suffix.lower(), self.active_model, str(e), tb_str)
 
     def _generate_master_frontmatter(self, title, session_files_count):
         """Generates YAML frontmatter for the master report based on tp resource note.md"""

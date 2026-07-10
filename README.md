@@ -107,6 +107,12 @@ Ricemaker maintains a clean record of its operations:
 
 ## Changelog
 
+### v2.2 (2026-07-10)
+- Implemented structured error logging that captures detailed traceback stack traces, active model, and exception details to a CSV format.
+- Made the error log location configurable via the new `"error_log_file"` key in `config.json` (defaults to the output folder path).
+- Added `libreoffice` and `easyocr` dependencies to the Docker setup to enable legacy file translation and scanned PDF fallback OCR out of the box.
+- Bypassed hard Flask crashes on startup when keys/config files are missing, allowing the web service to launch and report diagnostic connection/configuration failures directly inside a dynamic dashboard banner.
+
 ### v2.1 (2026-07-09)
 - Added support for switching between llama.cpp server and Ollama local LLM models via `llm_provider` configuration.
 - Configured dedicated local endpoint bases (`LLAMA_CPP_API_BASE` and `OLLAMA_API_BASE`) in `keys.json`.
