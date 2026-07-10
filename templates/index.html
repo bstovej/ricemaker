@@ -118,8 +118,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            padding: 2.5rem;
+            margin-bottom: 1rem;
+            padding: 1.25rem 2.5rem;
             border-radius: 1rem;
             background-image: url('/static/padifield.jpg');
             background-size: cover;
@@ -131,14 +131,14 @@
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            gap: 1rem;
+            margin-bottom: 1rem;
         }
 
         .stat-card {
             background-color: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            padding: 1.5rem;
+            padding: 0.75rem 1.25rem;
             border-radius: 0.75rem;
         }
 
@@ -350,13 +350,13 @@
         <!-- Dashboard View -->
         <div id="view-dashboard">
             <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-label">Queue Size</span>
-                    <span id="stat-total" class="stat-value">0</span>
-                </div>
                 <div class="stat-card" style="border-left: 4px solid var(--accent-primary);">
                     <span class="stat-label">Total Files Received</span>
                     <span id="stat-total-received" class="stat-value" style="color: var(--accent-primary);">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Queue Size</span>
+                    <span id="stat-total" class="stat-value">0</span>
                 </div>
                 <div class="stat-card">
                     <span class="stat-label">Active Model</span>
@@ -377,7 +377,7 @@
             </div>
 
             <!-- Status & Connection Message Banner -->
-            <div id="status-message-banner" style="display: none; margin-bottom: 1rem; padding: 1.25rem 1.75rem; border-radius: 0.75rem; font-weight: 500; font-size: 0.95rem; align-items: center; gap: 0.75rem; border: 1px solid var(--border-color); line-height: 1.5;">
+            <div id="status-message-banner" style="display: none; margin-bottom: 1rem; padding: 0.6rem 1.25rem; border-radius: 0.75rem; font-weight: 500; font-size: 0.875rem; align-items: center; gap: 0.75rem; border: 1px solid var(--border-color); line-height: 1.5;">
                 <i id="status-banner-icon" data-lucide="info" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
                 <span id="status-banner-text" style="flex: 1; font-family: var(--font-main);">Syncing status...</span>
             </div>
