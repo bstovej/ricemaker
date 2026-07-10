@@ -188,10 +188,28 @@ def session_stats():
             session_data['status_message'] = llm_error
             session_data['status_type'] = 'error'
         else:
+            config = get_data('config.json')
+            input_folder = Path(config.get('input_folder', './input'))
+            
+            current_input_files = set()
+            if input_folder.exists() and input_folder.is_dir():
+                for f in input_folder.iterdir():
+                    if f.is_file() and not f.name.startswith('.'):
+                        current_input_files.add(f.name)
+            
             plan = get_data(DATA_DIR / 'plan.json')
-            files = plan.get('files', {})
-            total_files = len(files)
-            completed_files = sum(1 for f, info in files.items() if info.get('status') in ('completed', 'archived'))
+            plan_files = plan.get('files', {})
+            
+            # Union of physically present input files and historically recorded files
+            all_file_names = current_input_files.union(plan_files.keys())
+            
+            total_files = len(all_file_names)
+            completed_files = 0
+            for name in all_file_names:
+                info = plan_files.get(name, {})
+                status = info.get('status', 'pending')
+                if status in ('completed', 'archived'):
+                    completed_files += 1
             
             if total_files > 0:
                 pct = int((completed_files / total_files) * 100)
