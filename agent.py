@@ -113,7 +113,7 @@ class RicemakerAgent:
                         {"role": "user", "content": user_content}
                     ],
                     api_base=api_base,
-                    timeout=300
+                    timeout=600
                 )
                 
                 # Track Tokens (Session Only)
@@ -309,7 +309,7 @@ class RicemakerAgent:
             str(file_path.absolute())
         ]
         
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
         if result.returncode != 0:
             raise Exception(f"LibreOffice conversion failed: {result.stderr}")
             
@@ -963,11 +963,11 @@ if __name__ == "__main__":
     input_path = agent.config.get('input_folder', './input')
     
     # --- Connection Test ---
-    logging.info(f"Testing connection to llama.cpp at {agent.llama_cpp_base} (60s timeout)...")
+    logging.info(f"Testing connection to llama.cpp at {agent.llama_cpp_base} (120s timeout)...")
     try:
         import requests
         # Check OpenAI-compatible models endpoint
-        resp = requests.get(f"{agent.llama_cpp_base}/models", timeout=60)
+        resp = requests.get(f"{agent.llama_cpp_base}/models", timeout=120)
         if resp.status_code == 200:
             logging.info("Successfully connected to llama.cpp server.")
             models = [m['id'] for m in resp.json().get('data', [])]
