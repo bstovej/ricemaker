@@ -452,7 +452,10 @@
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
                                 <h2>Selected File Summary</h2>
                             </div>
-                            <i data-lucide="check-circle" style="width: 16px; height: 16px; color: var(--status-completed);"></i>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <button class="btn btn-warning" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; display: none;" id="dashboard-btn-rereview" onclick="window.rereviewCurrentFile()">Re-review</button>
+                                <i data-lucide="check-circle" style="width: 16px; height: 16px; color: var(--status-completed);"></i>
+                            </div>
                         </div>
                         <div id="latest-summary-title" style="padding: 0.75rem 1.5rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; border-bottom: 1px solid var(--border-color); color: var(--text-primary); display: none;">
                             <!-- File Name injected here -->

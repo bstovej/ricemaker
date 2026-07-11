@@ -1,5 +1,6 @@
 let selectedFile = null;
 let currentView = 'dashboard';
+let currentPlanFiles = {};
 
 function showView(view) {
     currentView = view;
@@ -251,6 +252,13 @@ async function viewReport(filename) {
                 latestSummaryTitle.innerText = filename;
                 latestSummaryTitle.style.display = 'block';
             }
+            const fileInfo = currentPlanFiles[filename];
+            const fileStatus = fileInfo ? fileInfo.status : null;
+            const showReReview = fileStatus && (fileStatus === 'completed' || fileStatus === 'archived' || fileStatus.startsWith('error'));
+            const dashboardBtnReReview = document.getElementById('dashboard-btn-rereview');
+            if (dashboardBtnReReview) {
+                dashboardBtnReReview.style.display = showReReview ? 'inline-flex' : 'none';
+            }
         }
     } catch (err) {
         console.error("Fetch Report Error:", err);
@@ -364,6 +372,7 @@ async function refreshDashboard() {
         const statusRes = await fetch(`/api/status?t=${ts}`);
         const plan = await statusRes.json();
         const planFiles = plan.files || {};
+        currentPlanFiles = planFiles;
 
         const sessionRes = await fetch(`/api/session?t=${ts}`);
         const sessionData = await sessionRes.json();
@@ -545,6 +554,14 @@ async function refreshDashboard() {
             
             // Prefer the user-selected file, otherwise fallback to the latest completed report
             const activeDisplayFile = selectedFile || (latestCompleted ? latestCompleted.name : null);
+
+            const activeFileObj = mergedList.find(f => f.name === activeDisplayFile);
+            const activeFileStatus = activeFileObj ? activeFileObj.status : null;
+            const showReReview = activeFileStatus && (activeFileStatus === 'completed' || activeFileStatus === 'archived' || activeFileStatus.startsWith('error'));
+            const dashboardBtnReReview = document.getElementById('dashboard-btn-rereview');
+            if (dashboardBtnReReview) {
+                dashboardBtnReReview.style.display = showReReview ? 'inline-flex' : 'none';
+            }
 
             const latestSummaryTitle = document.getElementById('latest-summary-title');
             const latestSummaryContent = document.getElementById('latest-summary-content');
