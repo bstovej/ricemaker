@@ -1,5 +1,8 @@
 .DS_Store
 GEMINI.md
+AGENTS.md
+data/
+error_logs/
 history.csv
 config.json
 keys.json
