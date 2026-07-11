@@ -535,9 +535,9 @@ async function refreshDashboard() {
                         bannerEl.style.color = 'var(--status-error)';
                         if (bannerIcon) bannerIcon.setAttribute('data-lucide', 'alert-circle');
                     } else {
-                        bannerEl.style.backgroundColor = 'rgba(74, 222, 128, 0.08)';
-                        bannerEl.style.borderColor = 'rgba(74, 222, 128, 0.3)';
-                        bannerEl.style.color = 'var(--accent-primary)';
+                        bannerEl.style.backgroundColor = 'var(--bg-secondary)';
+                        bannerEl.style.borderColor = 'var(--border-color)';
+                        bannerEl.style.color = 'var(--text-primary)';
                         if (bannerIcon) bannerIcon.setAttribute('data-lucide', 'activity');
                     }
                     if (typeof lucide !== 'undefined') lucide.createIcons();
