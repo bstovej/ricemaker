@@ -401,23 +401,33 @@ class RicemakerAgent:
         file_path = Path(file_path)
         logging.info(f"Transcribing audio/video file via local Transformers Whisper: {file_path.name}")
         
-        supported_by_whisper = ('.mp3', '.mp4', '.mpeg', '.mpga', '.m4a', '.wav', '.webm')
-        temp_mp3 = None
-        
         try:
-            if file_path.suffix.lower() not in supported_by_whisper:
-                import subprocess
-                temp_mp3 = file_path.with_suffix('.temp.mp3')
-                logging.info(f"Converting unsupported format {file_path.name} to MP3 using ffmpeg...")
-                cmd = ["ffmpeg", "-y", "-i", str(file_path.absolute()), "-vn", "-acodec", "libmp3lame", "-q:a", "2", str(temp_mp3.absolute())]
-                subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                transcribe_path = temp_mp3
-            else:
-                transcribe_path = file_path
+            import subprocess
+            import numpy as np
+
+            logging.info(f"Decoding audio/video file via ffmpeg to raw PCM: {file_path.name}")
+            cmd = [
+                "ffmpeg",
+                "-y",
+                "-i", str(file_path.absolute()),
+                "-ac", "1",
+                "-ar", "16000",
+                "-f", "f32le",
+                "-"
+            ]
+            
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = process.communicate()
+            if process.returncode != 0:
+                raise Exception(f"FFmpeg decoding failed: {stderr.decode()}")
+
+            audio_array = np.frombuffer(stdout, dtype=np.float32)
+            if audio_array.size == 0:
+                raise Exception("Decoded audio data is empty.")
 
             transcriber = self._get_transcriber()
             result = transcriber(
-                str(transcribe_path),
+                {"raw": audio_array, "sampling_rate": 16000},
                 chunk_length_s=30,
                 batch_size=16,
                 return_timestamps=True
@@ -429,12 +439,9 @@ class RicemakerAgent:
             
             return transcript_text
             
-        finally:
-            if temp_mp3 and temp_mp3.exists():
-                try:
-                    os.remove(temp_mp3)
-                except Exception as e:
-                    logging.warning(f"Failed to remove temp file {temp_mp3}: {e}")
+        except Exception as e:
+            logging.error(f"Error during audio/video transcription: {e}")
+            raise e
 
     def process_file(self, file_path):
         """Logic to extract content and call LLM with recursive chunking"""
@@ -895,9 +902,9 @@ class RicemakerAgent:
                                 
                                 # Only queue if not already in queue
                                 if f_abs not in self.queued_files:
-                                    # And not already successfully completed or archived
+                                    # And not already successfully completed, archived, or failed with error
                                     plan_status = plan.get('files', {}).get(f, {}).get('status', '')
-                                    is_done = f_abs in completed_paths or plan_status in ('completed', 'archived')
+                                    is_done = f_abs in completed_paths or plan_status in ('completed', 'archived') or plan_status.startswith('error')
                                     
                                     # Unless it's explicitly marked as 'pending' (like when requesting re-review)
                                     if not is_done or plan_status == 'pending':
@@ -1020,9 +1027,8 @@ if __name__ == "__main__":
                 status = info.get('status', '')
                 if status == 'pending' or status.startswith('Processing'):
                     if status.startswith('Processing'):
-                        logging.warning(f"File {filename} was stuck in {status}. Marking as error to prevent crash loops.")
-                        agent.update_state(filename, "error (crashed during processing)", session_id=agent.session_id_str)
-                        continue
+                        logging.info(f"File {filename} was interrupted during {status}. Resetting to pending to resume.")
+                        agent.update_state(filename, "pending", session_id=agent.session_id_str)
 
                     orig_file = Path(input_path) / filename
                     if not orig_file.exists():
