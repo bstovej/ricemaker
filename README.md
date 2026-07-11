@@ -1,4 +1,4 @@
-# Ricemaker (v2.1, 2026-07-09)
+# Ricemaker (v0.2.2, 2026-07-10)
 **Durable AI File Reviewer Agent for Mac & Windows (Desktop Edition)**
 
 
@@ -21,13 +21,13 @@ Open your terminal (macOS/Linux) or PowerShell/Command Prompt (Windows) and run 
 
 **macOS / Linux:**
 ```bash
-git clone https://github.com/your-username/ricemaker.git
+git clone https://github.com/bstove/ricemaker.git
 cd ricemaker
 ```
 
 **Windows:**
 ```powershell
-git clone https://github.com/your-username/ricemaker.git
+git clone https://github.com/bstove/ricemaker.git
 cd ricemaker
 ```
 
@@ -129,14 +129,15 @@ Ricemaker maintains a clean record of its operations:
 
 ## Changelog
 
-### v2.2 (2026-07-10)
+### v0.2.2 (2026-07-10)
 - Implemented structured error logging that captures detailed traceback stack traces, active model, and exception details to a CSV format.
 - Standardized error log filenames to `ricemaker_error_log_<date_time_started>.csv`.
 - Made the error log destination folder configurable via the new `"error_log_path"` key in `config.json` (defaults to the output folder path).
 - Added `libreoffice` and `easyocr` dependencies to the Docker setup to enable legacy file translation and scanned PDF fallback OCR out of the box.
 - Bypassed hard Flask crashes on startup when keys/config files are missing, allowing the web service to launch and report diagnostic connection/configuration failures directly inside a dynamic dashboard banner.
+- Updated UI layout for Dashboard and File Archives sections
 
-### v2.1 (2026-07-09)
+### v0.2.1 (2026-07-09)
 - Added support for switching between llama.cpp server and Ollama local LLM models via `llm_provider` configuration.
 - Configured dedicated local endpoint bases (`LLAMA_CPP_API_BASE` and `OLLAMA_API_BASE`) in `keys.json`.
 - Updated background agent routing logic to dynamically prepend model prefixes and map endpoints.
