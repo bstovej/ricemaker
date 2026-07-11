@@ -21,13 +21,13 @@ Open your terminal (macOS/Linux) or PowerShell/Command Prompt (Windows) and run 
 
 **macOS / Linux:**
 ```bash
-git clone https://github.com/bstove/ricemaker.git
+git clone https://github.com/bstovej/ricemaker.git
 cd ricemaker
 ```
 
 **Windows:**
 ```powershell
-git clone https://github.com/bstove/ricemaker.git
+git clone https://github.com/bstovej/ricemaker.git
 cd ricemaker
 ```
 
