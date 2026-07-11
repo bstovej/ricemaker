@@ -273,40 +273,46 @@ window.closeModal = function() {
 async function refreshStats() {
     try {
         const res = await fetch('/api/stats');
-        const stats = await res.json();
+        const data = await res.json();
         const tableBody = document.getElementById('stats-table-body');
         
         if (!tableBody) return;
         tableBody.innerHTML = '';
         
-        if (stats && stats.length > 0) {
-            let totalTokens = 0;
-            let totalInfTime = 0;
-            let totalExtTime = 0;
-            
-            stats.reverse().forEach(s => {
-                totalTokens += (s.total_tokens || 0);
-                totalInfTime += (s.inference_time || 0);
-                totalExtTime += (s.extraction_time || 0);
-                
-                tableBody.innerHTML += `
+        const summary = data.summary || { alltime_tokens: 0, avg_inference: 0, avg_extraction: 0, alltime_files: 0, alltime_cost: 0 };
+        const records = data.records || [];
+        
+        // Render summary cards
+        document.getElementById('alltime-tokens').innerText = summary.alltime_tokens > 1000 ? (summary.alltime_tokens / 1000).toFixed(1) + 'k' : summary.alltime_tokens;
+        document.getElementById('avg-inference').innerText = summary.avg_inference.toFixed(1) + 's';
+        document.getElementById('avg-extraction').innerText = summary.avg_extraction.toFixed(1) + 's';
+        document.getElementById('alltime-files').innerText = summary.alltime_files;
+        
+        const alltimeCostEl = document.getElementById('alltime-cost');
+        if (alltimeCostEl) {
+            alltimeCostEl.innerText = `$${summary.alltime_cost.toFixed(4)}`;
+        }
+        
+        document.getElementById('stats-record-count').innerText = `${summary.alltime_files} records (showing latest ${records.length})`;
+
+        // Build HTML table using a single string join for maximum performance (O(N) rendering)
+        if (records.length > 0) {
+            const rowsHtml = [...records].reverse().map(s => {
+                const costVal = s.cost_usd !== undefined ? `$${parseFloat(s.cost_usd).toFixed(6)}` : '$0.000000';
+                return `
                     <tr>
                         <td style="white-space: nowrap;">${s.date}</td>
                         <td style="font-family: 'JetBrains Mono', monospace;">${s.filename}</td>
                         <td>${s.file_type}</td>
                         <td>${s.total_tokens}</td>
+                        <td>${costVal}</td>
                         <td>${s.extraction_time}s</td>
                         <td>${s.inference_time}s</td>
                         <td><strong>${s.total_time}s</strong></td>
                     </tr>
                 `;
-            });
-            
-            document.getElementById('alltime-tokens').innerText = totalTokens > 1000 ? (totalTokens / 1000).toFixed(1) + 'k' : totalTokens;
-            document.getElementById('avg-inference').innerText = (totalInfTime / stats.length).toFixed(1) + 's';
-            document.getElementById('avg-extraction').innerText = (totalExtTime / stats.length).toFixed(1) + 's';
-            document.getElementById('alltime-files').innerText = stats.length;
-            document.getElementById('stats-record-count').innerText = `${stats.length} records`;
+            }).join('');
+            tableBody.innerHTML = rowsHtml;
         }
     } catch (err) {
         console.error("Stats Load Error:", err);

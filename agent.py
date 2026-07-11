@@ -174,6 +174,33 @@ class RicemakerAgent:
         total_tokens = prompt_tokens + completion_tokens
         total_time = extraction_time + inference_time
         
+        # Upgrade existing stats.csv schema if cost_usd is missing
+        if file_exists:
+            try:
+                with open(stats_path, 'r') as f:
+                    headers = f.readline().strip().split(',')
+                if "cost_usd" not in headers:
+                    df_existing = pd.read_csv(stats_path)
+                    df_existing["cost_usd"] = 0.0
+                    df_existing.to_csv(stats_path, index=False)
+            except Exception as e:
+                logging.error(f"Failed to upgrade stats.csv schema: {e}")
+        
+        # Calculate USD cost
+        pricing = self.config.get("model_pricing", {})
+        model_key = model.lower() if model else ""
+        matched_pricing = None
+        for key, value in pricing.items():
+            if key != "default_fallback" and key in model_key:
+                matched_pricing = value
+                break
+        if not matched_pricing:
+            matched_pricing = pricing.get(model_key, pricing.get("default_fallback", {"input_cost_per_1k": 0.0, "output_cost_per_1k": 0.0}))
+        
+        input_rate = matched_pricing.get("input_cost_per_1k", 0.0)
+        output_rate = matched_pricing.get("output_cost_per_1k", 0.0)
+        cost_usd = round((prompt_tokens / 1000.0 * input_rate) + (completion_tokens / 1000.0 * output_rate), 6)
+        
         new_entry = {
             "date": datetime.now().strftime("%Y-%m-%d"),
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -185,7 +212,8 @@ class RicemakerAgent:
             "total_tokens": total_tokens,
             "extraction_time": round(extraction_time, 2),
             "inference_time": round(inference_time, 2),
-            "total_time": round(total_time, 2)
+            "total_time": round(total_time, 2),
+            "cost_usd": cost_usd
         }
         
         df = pd.DataFrame([new_entry])

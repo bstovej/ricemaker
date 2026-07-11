@@ -11,5 +11,12 @@
   "output_folder": "./output",
   "prompts_file": "prompts.json",
   "secondary_model_name": "your-model-name",
-  "whisper_model": "karanchopda333/whisper:latest"
+  "whisper_model": "karanchopda333/whisper:latest",
+  "model_pricing": {
+    "gpt-4o": { "input_cost_per_1k": 0.005, "output_cost_per_1k": 0.015 },
+    "gpt-4o-mini": { "input_cost_per_1k": 0.00015, "output_cost_per_1k": 0.00060 },
+    "gpt-4-turbo": { "input_cost_per_1k": 0.010, "output_cost_per_1k": 0.030 },
+    "gpt-3.5-turbo": { "input_cost_per_1k": 0.0005, "output_cost_per_1k": 0.0015 },
+    "default_fallback": { "input_cost_per_1k": 0.0, "output_cost_per_1k": 0.0 }
+  }
 }

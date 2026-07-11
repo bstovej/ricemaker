@@ -262,9 +262,44 @@ def stats():
         import pandas as pd
         stats_path = DATA_DIR / 'stats.csv'
         if stats_path.exists():
-            df = pd.read_csv(stats_path)
-            return df.to_dict(orient='records')
-        return []
+            try:
+                df = pd.read_csv(stats_path)
+                # Ensure cost_usd exists in df
+                if 'cost_usd' not in df.columns:
+                    df['cost_usd'] = 0.0
+                
+                total_tokens = int(df['total_tokens'].sum()) if 'total_tokens' in df.columns else 0
+                avg_inf = float(df['inference_time'].mean()) if 'inference_time' in df.columns else 0.0
+                avg_ext = float(df['extraction_time'].mean()) if 'extraction_time' in df.columns else 0.0
+                total_files = len(df)
+                total_cost = float(df['cost_usd'].sum()) if 'cost_usd' in df.columns else 0.0
+                
+                # Get latest 200 records
+                latest_df = df.tail(200)
+                records = latest_df.to_dict(orient='records')
+                
+                return {
+                    "summary": {
+                        "alltime_tokens": total_tokens,
+                        "avg_inference": round(avg_inf, 2),
+                        "avg_extraction": round(avg_ext, 2),
+                        "alltime_files": total_files,
+                        "alltime_cost": round(total_cost, 4)
+                    },
+                    "records": records
+                }
+            except Exception as e:
+                print(f"Error reading stats: {e}")
+        return {
+            "summary": {
+                "alltime_tokens": 0,
+                "avg_inference": 0.0,
+                "avg_extraction": 0.0,
+                "alltime_files": 0,
+                "alltime_cost": 0.0
+            },
+            "records": []
+        }
     
     return jsonify(get_cached_data('stats_csv', _get_stats, ttl=15))
 
