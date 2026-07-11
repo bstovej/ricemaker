@@ -454,13 +454,19 @@ class RicemakerAgent:
                 raise Exception("Decoded audio data is empty.")
 
             transcriber = self._get_transcriber()
-            result = transcriber(
-                {"raw": audio_array, "sampling_rate": 16000},
-                chunk_length_s=30,
-                batch_size=16,
-                return_timestamps=True
-            )
             
+            import torch
+            import gc
+            
+            with torch.no_grad():
+                result = transcriber(
+                    {"raw": audio_array, "sampling_rate": 16000},
+                    chunk_length_s=30,
+                    batch_size=1,
+                    return_timestamps=True
+                )
+            
+            gc.collect()
             transcript_text = result.get("text", "").strip()
             if not transcript_text:
                 raise Exception("Local Whisper transcriber returned empty transcription.")
@@ -951,7 +957,7 @@ class RicemakerAgent:
             else:
                 agent_state = 'running'
             
-            if agent_state == 'stopped':
+            if agent_state == 'stopped' and '--force' not in sys.argv:
                 logging.info("Agent state is STOPPED. Processing thread exiting...")
                 break
                 
